@@ -53,5 +53,10 @@ namespace Client
             transform.DOMoveX(position.x, .25f);
             transform.DOMoveY(position.y, .25f);
         }
+
+        public void Recycle()
+        {
+            pool.Recycle(this);
+        }
     }
 }

@@ -2,48 +2,54 @@ using Config;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Core
 {
-    public class Match
+    public interface IMatch
     {
-        private IConga conga;
+        Action<IParticipant> OnJoinParticipant { get; set; }
+        Action OnDefeat { get; set; }
+
+        IEnumerator Launch();
+        void Update(float time, Vector2Int directionInput);
+    }
+
+    public class Match :IMatch
+    {
         private IBoard board;
+        private IRythm rythm;
+        private IConga conga;
         private IParticipant awaitingParticipant;
-        private Rythm rythm;
 
         private List<ParticipantConfig> config;
-        public Action<IParticipant> addParticipant;
+        private Action<IParticipant> joinParticipant;
+        private Action defeat;
 
         private const int BOARD_SIZE = 9;
+        public Action<IParticipant> OnJoinParticipant { get => joinParticipant; set => joinParticipant = value; }
+        public Action OnDefeat { get => defeat; set => defeat = value; }
 
-
-        public Match(Vector2Int location, List<ParticipantConfig> participants)
+        public Match(List<ParticipantConfig> participants)
         {
             config = participants;
 
-            conga = new Conga();
-            conga.Setup(GetRandomFactory().Build(location));
-
-            rythm = new Rythm();
-            rythm.step += StepConga;
-
             board = new Board(BOARD_SIZE);
+            conga = new Conga();
+            rythm = new Rythm();
 
-            awaitingParticipant = GetRandomFactory().Build(GetEmptyLocation());
-            //addParticipant?.Invoke(awaitingParticipant);
+            conga.Setup(GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants)));
+            awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
+            rythm.OnStep += StepOn;
         }
 
         public IEnumerator Launch()
         {
             yield return null;
 
-            addParticipant.Invoke(conga.First);
-
-            yield return null;
-
-            addParticipant.Invoke(awaitingParticipant);
+            joinParticipant?.Invoke(conga.First);
+            joinParticipant?.Invoke(awaitingParticipant);
         }
 
         public void Update(float time, Vector2Int directionInput)
@@ -51,24 +57,26 @@ namespace Core
             rythm.Update(time);
 
             if (directionInput != Vector2Int.zero)
-                conga.Update(directionInput);
+                conga.Update(board, directionInput);
         }
 
-        private void StepConga()
+        private void StepOn()
         {
-            conga.StepOn(board);
-
-            if (conga.First.Location == awaitingParticipant.Location)
+            Vector2Int location = conga.First.Location + conga.Direction;
+            if (conga.Participants.Count > 1 && conga.Participants.Any(x => x.Location == location))
+            {
+                defeat?.Invoke();
+                return;
+            }
+            
+            if (location == awaitingParticipant.Location)
             {
                 conga.AddParticipant(awaitingParticipant);
-                awaitingParticipant = GetRandomFactory().Build(GetEmptyLocation());
-                addParticipant?.Invoke(awaitingParticipant);
+                awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
+                joinParticipant?.Invoke(awaitingParticipant);
             }
-        }
 
-        private Vector2Int GetEmptyLocation()
-        {
-            return board.GetEmptyLocation(conga.Participants);
+            conga.StepOn(board);
         }
 
         private IParticipantFactory GetRandomFactory(bool allowClone = true)

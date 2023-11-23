@@ -6,23 +6,24 @@ namespace Core
 {
     public class Conga : IConga
     {
-        private Queue<IParticipant> participants;
+        private List<IParticipant> participants = new List<IParticipant>();
         private Vector2Int direction;
 
         public int Size => participants.Count;
         public IParticipant First => participants?.ToArray()[0];
-        public List<IParticipant> Participants => participants.ToList();
+        public List<IParticipant> Participants => participants?.ToList();
         public Vector2Int Direction => direction;
+
 
         public void Setup(IParticipant participant)
         {
-            participants = new Queue<IParticipant>();
-            participants.Enqueue(participant);
+            participants = new List<IParticipant>();
+            participants.Insert(0, participant);
         }
 
-        public void Update(Vector2Int directionSetup)
+        public void Update(IBoard board, Vector2Int directionSetup)
         {
-            if (direction == -directionSetup)
+            if (direction == - directionSetup)
                 return;
 
             direction = directionSetup;
@@ -30,7 +31,7 @@ namespace Core
 
         public void AddParticipant(IParticipant participant)
         {
-            participants.Enqueue(participant);
+            participants.Insert(0, participant);
         }
 
         public void StepOn(IBoard board)
@@ -38,14 +39,14 @@ namespace Core
             if (First == null)
                 return;
 
-            Vector2Int dir = board.OverrideDirection(First.Location, direction);
             Vector2Int previousLocation = First.Location;
+            Vector2Int dir = direction;
 
             foreach (IParticipant participant in participants)
             {
                 dir = participant == First ? dir : previousLocation - participant.Location;
                 previousLocation = participant.Location;
-                participant.Move(dir);
+                participant.Move(board, dir);
             }
         }
     }
@@ -59,6 +60,6 @@ namespace Core
         void AddParticipant(IParticipant participant);
         void StepOn(IBoard board);
 
-        void Update(Vector2Int direction);
+        void Update(IBoard board, Vector2Int directionSetup);
     }
 }

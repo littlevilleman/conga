@@ -1,7 +1,13 @@
 using System;
 using UnityEngine;
 
-public class MenuView : MonoBehaviour
+public interface IView
+{
+    void Display();
+    void Hide();
+}
+
+public class MenuView : MonoBehaviour, IView
 {
     [SerializeField] private MenuButton startGameButton;
     [SerializeField] private MenuButton optionsButton;
@@ -55,10 +61,10 @@ public class MenuView : MonoBehaviour
         int options = Enum.GetNames(typeof(EMenuOption)).Length;
 
         if (toOption < 0)
-            toOption += 3;
+            toOption += options;
 
-        if ((int) toOption >= 3)
-            toOption -= 3;
+        if ((int) toOption >= options)
+            toOption -= options;
 
         return toOption;
     }
@@ -82,6 +88,7 @@ public class MenuView : MonoBehaviour
 
     private void OnClickStartGame()
     {
+        Hide();
         startGame?.Invoke();
     }
 

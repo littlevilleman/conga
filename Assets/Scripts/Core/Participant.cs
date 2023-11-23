@@ -20,9 +20,9 @@ namespace Core
             location = locationSetup;
         }
 
-        public void Move(Vector2Int direction)
+        public void Move(IBoard board, Vector2Int direction)
         {
-            location += direction;
+            location = board.OverrideLocation(location + direction);
             move?.Invoke(location, direction);
         }
     }
@@ -33,7 +33,7 @@ namespace Core
         Vector2Int Location { get; }
         Action<Vector2Int, Vector2Int> OnMove { get; set; }
 
-        void Move(Vector2Int location);
+        void Move(IBoard board, Vector2Int location);
     }
 
     public interface IParticipantFactory

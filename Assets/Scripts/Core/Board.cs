@@ -8,8 +8,8 @@ namespace Core
     public interface IBoard
     {
         Vector2Int GetEmptyLocation(List<IParticipant> participants);
-        bool IsValidLocation(Vector2Int lcoation);
-        Vector2Int OverrideDirection(Vector2Int location, Vector2Int direction);
+        Vector2Int OverrideLocation(Vector2Int lcoation);
+        //Vector2Int OverrideDirection(Vector2Int location, Vector2Int direction);
     }
 
     public class Board : IBoard
@@ -25,27 +25,33 @@ namespace Core
             size = new Vector2Int(sizeSetup, sizeSetup);
         }
 
-        public bool IsValidLocation(Vector2Int location)
+        public Vector2Int OverrideLocation(Vector2Int location)
         {
-            if (location.x >= size.x || location.x < 0)
-                return false;
+            if (location.x < 0)
+                return location + Vector2Int.right * size.x;
 
-            if (location.y >= size.y || location.y < 0)
-                return false;
+            if (location.x >= size.x)
+                return location - Vector2Int.right * size.x;
 
-            return true;
+            if (location.y < 0)
+                return location + Vector2Int.up * size.y;
+
+            if (location.y >= size.y)
+                return location - Vector2Int.up * size.y;
+
+            return location;
         }
 
         public Vector2Int OverrideDirection(Vector2Int location, Vector2Int direction)
         {
-            if (IsValidLocation(location + direction))
-                return direction;
-
-            foreach (var d in directions)
-            {
-                if (IsValidLocation(location + d))
-                    return d;
-            }
+            //if (IsValidLocation(location + direction))
+            //    return direction;
+            //
+            //foreach (var d in directions)
+            //{
+            //    if (IsValidLocation(location + d))
+            //        return d;
+            //}
 
             return direction;
         }
@@ -53,12 +59,14 @@ namespace Core
         public Vector2Int GetEmptyLocation(List<IParticipant> participants)
         {
             List<Vector2Int> emptyLocations = new List<Vector2Int>();
+            List<Vector2Int> participantsLocations = participants.Select(x => x.Location).ToList();
+            
             for (int x = 0; x < size.x; x++)
             {
                 for (int y = 0; y < size.y; y++)
                 {
                     Vector2Int emptyLocation = new Vector2Int(x, y);
-                    if (!participants.Any(x => x.Location == emptyLocation))
+                    if (!participantsLocations.Contains(emptyLocation))
                         emptyLocations.Add(emptyLocation);
                 }
             }

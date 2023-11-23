@@ -1,20 +1,33 @@
 using System;
 
-public class Rythm
+namespace Core
 {
-    private float stepTime = .5f;
-    private float stepCooldown;
-
-    public Action step;
-
-    public void Update(float time)
+    public interface IRythm
     {
-        stepCooldown -= time;
+        float Cadence { get; }
+        Action OnStep { get; set; }
+        void Update(float time);
+    }
 
-        if (stepCooldown <= 0f)
+    public class Rythm :IRythm
+    {
+        private float cadence = .25f;
+        private float stepCooldown;
+        private Action step;
+
+        public float Cadence => cadence;
+        public Action OnStep { get => step; set => step = value; }
+
+
+        public void Update(float time)
         {
-            step?.Invoke();
-            stepCooldown += stepTime;
+            stepCooldown -= time;
+
+            if (stepCooldown <= 0f)
+            {
+                step?.Invoke();
+                stepCooldown += cadence;
+            }
         }
     }
 }

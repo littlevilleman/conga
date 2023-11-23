@@ -11,14 +11,49 @@ namespace Core
         [SerializeField] private List<ParticipantBehaviour> participants;
         [SerializeField] private ParticipantPool pool;
         [SerializeField] private MenuView menuView;
+        [SerializeField] private DefeatView defeatView;
 
-        private Match match;
+        private IMatch match;
 
         // Start is called before the first frame update
         void Start()
         {
             menuView.startGame += StartGame;
             menuView.exitGame += ExitGame;
+            menuView.Display();
+
+            defeatView.restart += RestartGame;
+            defeatView.back += BackToMenu;
+        }
+
+        private void RecycleParticipants()
+        {
+            foreach (ParticipantBehaviour participant in participants)
+            {
+                participant.Recycle();
+            }
+
+            participants.Clear();
+        }
+
+        private void StartGame()
+        {
+            match = new Match(config);
+            match.OnJoinParticipant += AddParticipant;
+            match.OnDefeat += Defeat;
+
+            StartCoroutine(match.Launch());
+        }
+
+        private void RestartGame()
+        {
+            RecycleParticipants();
+            StartGame();
+        }
+
+        private void BackToMenu()
+        {
+            RecycleParticipants();
             menuView.Display();
         }
 
@@ -27,17 +62,10 @@ namespace Core
             Application.Quit();
         }
 
-        private void StartGame()
+        private void Defeat()
         {
-            match = new Match(Vector2Int.zero, config);
-            match.addParticipant += AddParticipant;
-
-            //AddParticipant(match.FirstParticipant);
-            //AddParticipant(match.AwaitingParticipant);
-
-            menuView.Hide();
-
-            StartCoroutine(match.Launch());
+            match = null;
+            defeatView.Display();
         }
 
         private void AddParticipant(IParticipant newParticipant)

@@ -11,7 +11,7 @@ namespace Client
     {
         [SerializeField] private List<RectTransform> letters;
         [SerializeField] private Image background;
-
+        private float letterSpawnDelay = .05f;
         private Color initialColor;
 
 
@@ -27,9 +27,9 @@ namespace Client
             background.color = initialColor;
         }
 
-        public void Play(float letterSpawnDelay = .05f)
+        public void Play()
         {
-            StartCoroutine(Launch(letterSpawnDelay));
+            StartCoroutine(PlayAnimation());
         }
         public void Stop()
         {
@@ -39,7 +39,13 @@ namespace Client
             }
         }
 
-        private IEnumerator Launch(float letterSpawnDelay)
+        private IEnumerator PlayAnimation()
+        {
+            yield return PlayLettersAnimation();
+            yield return PlayBackgroundAnimation();
+        }
+
+        private IEnumerator PlayLettersAnimation()
         {
             yield return new WaitForSeconds(1f);
 
@@ -49,10 +55,15 @@ namespace Client
 
                 yield return new WaitForSeconds(letterSpawnDelay);
             }
+        }
 
+        private IEnumerator PlayBackgroundAnimation()
+        {
             Color color = initialColor;
             color.a = 0f;
             background.DOColor(color, 1f);
+
+            yield return new WaitForSeconds(1f);
             onComplete?.Invoke();
         }
     }

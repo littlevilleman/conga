@@ -55,6 +55,6 @@ namespace Client
 
     public interface IPoolable<T> where T : MonoBehaviour, IPoolable<T>
     {
-        public void Recycle();
+        public void Recycle(IPool<T> pool);
     }
 }

@@ -1,116 +1,58 @@
-using System;
 using UnityEngine;
 
-public interface IView
+namespace Client
 {
-    void Display();
-    void Hide();
-}
-
-public class MenuView : MonoBehaviour, IView
-{
-    [SerializeField] private MenuButton startGameButton;
-    [SerializeField] private MenuButton optionsButton;
-    [SerializeField] private MenuButton exitGameButton;
-
-    public Action startGame;
-    public Action exitGame;
-
-    private EMenuOption selected = EMenuOption.START_GAME;
-
-    private enum EMenuOption
+    public class MenuView : View
     {
-        START_GAME, OPTIONS, QUIT
-    }
+        [SerializeField] private MenuSelector menuSelector;
+        [SerializeField] private IntroCut intro;
 
-    private void OnEnable()
-    {
-        startGameButton.Button.onClick.AddListener(OnClickStartGame);
-        startGameButton.Button.onClick.AddListener(OnClickOptions);
-        startGameButton.Button.onClick.AddListener(OnClickExitGame);
-    }
+        private MenuButton startGameButton => menuSelector.GetButton((int) EMenuOption.START_GAME);
+        private MenuButton optionsButton => menuSelector.GetButton((int) EMenuOption.OPTIONS);
+        private MenuButton exitGameButton => menuSelector.GetButton((int) EMenuOption.QUIT);
 
-    public void Display()
-    {
-        gameObject.SetActive(true);
-        SelectOption(selected);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.W))
-            SelectOption(selected - 1);
-
-        if (Input.GetKeyDown(KeyCode.S))
-            SelectOption(selected + 1);
-
-        if (Input.GetKeyDown(KeyCode.Return))
-            GetButton(selected).Button.onClick?.Invoke();
-    }
-
-    private void SelectOption(EMenuOption toOption)
-    {
-        toOption = ClampSelection(toOption);
-        GetButton(selected)?.Select(false);
-        selected = toOption;
-        GetButton(selected)?.Select(true);
-    }
-
-    private EMenuOption ClampSelection(EMenuOption toOption)
-    {
-        int options = Enum.GetNames(typeof(EMenuOption)).Length;
-
-        if (toOption < 0)
-            toOption += options;
-
-        if ((int) toOption >= options)
-            toOption -= options;
-
-        return toOption;
-    }
-
-    private MenuButton GetButton(EMenuOption selected)
-    {
-        switch (selected)
+        private enum EMenuOption
         {
-            case EMenuOption.START_GAME:
-                return startGameButton;
-
-            case EMenuOption.OPTIONS:
-                return optionsButton;
-
-            case EMenuOption.QUIT:
-                return exitGameButton;
+            START_GAME, OPTIONS, QUIT
         }
 
-        return startGameButton;
-    }
+        private void OnEnable()
+        {
+            startGameButton.Button.onClick.AddListener(OnClickStartGame);
+            optionsButton.Button.onClick.AddListener(OnClickOptions);
+            exitGameButton.Button.onClick.AddListener(OnClickExitGame);
 
-    private void OnClickStartGame()
-    {
-        Hide();
-        startGame?.Invoke();
-    }
+            intro.onComplete += OnCompleteIntro;
+            intro.Play();
+        }
 
-    private void OnClickOptions()
-    {
+        private void OnCompleteIntro()
+        {
+        }
 
-    }
+        private void OnClickStartGame()
+        {
+            EventBus.Send(new EventStartGame());
+        }
 
-    private void OnClickExitGame()
-    {
-        exitGame?.Invoke();
-    }
+        private void OnClickOptions()
+        {
 
-    public void Hide()
-    {
-        gameObject.SetActive(false);
-    }
+        }
 
-    private void OnDisable()
-    {
-        startGameButton.Button.onClick.RemoveListener(OnClickStartGame);
-        startGameButton.Button.onClick.RemoveListener(OnClickOptions);
-        startGameButton.Button.onClick.RemoveListener(OnClickExitGame);
+        private void OnClickExitGame()
+        {
+            EventBus.Send(new EventExitGame());
+        }
+
+        private void OnDisable()
+        {
+            startGameButton.Button.onClick.RemoveListener(OnClickStartGame);
+            optionsButton.Button.onClick.RemoveListener(OnClickOptions);
+            exitGameButton.Button.onClick.RemoveListener(OnClickExitGame);
+
+            intro.onComplete -= OnCompleteIntro;
+            intro.Stop();
+        }
     }
 }

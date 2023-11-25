@@ -8,64 +8,28 @@ namespace Core
     public class MatchManager : MonoBehaviour
     {
         [SerializeField] private List<ParticipantConfig> config;
-        [SerializeField] private List<ParticipantBehaviour> participants;
         [SerializeField] private ParticipantPool pool;
-        [SerializeField] private MenuView menuView;
-        [SerializeField] private DefeatView defeatView;
 
         private IMatch match;
+        private List<ParticipantBehaviour> participants = new();
 
-        // Start is called before the first frame update
-        void Start()
+        void OnEnable()
         {
-            menuView.startGame += StartGame;
-            menuView.exitGame += ExitGame;
-            menuView.Display();
-
-            defeatView.restart += RestartGame;
-            defeatView.back += BackToMenu;
+            EventBus.Register<EventStartGame>(StartGame);
+            EventBus.Register<EventExitGame>(ExitGame);
+            EventBus.Register<EventRestartGame>(RestartGame);
+            EventBus.Register<EventBackToMenu>(BackToMenu);
         }
 
-        private void RecycleParticipants()
+        private void StartGame(EventStartGame context)
         {
-            foreach (ParticipantBehaviour participant in participants)
-            {
-                participant.Recycle();
-            }
+            UIManager.Instance.HideAllViews();
 
-            participants.Clear();
-        }
-
-        private void StartGame()
-        {
             match = new Match(config);
             match.OnJoinParticipant += AddParticipant;
             match.OnDefeat += Defeat;
 
             StartCoroutine(match.Launch());
-        }
-
-        private void RestartGame()
-        {
-            RecycleParticipants();
-            StartGame();
-        }
-
-        private void BackToMenu()
-        {
-            RecycleParticipants();
-            menuView.Display();
-        }
-
-        private void ExitGame()
-        {
-            Application.Quit();
-        }
-
-        private void Defeat()
-        {
-            match = null;
-            defeatView.Display();
         }
 
         private void AddParticipant(IParticipant newParticipant)
@@ -75,12 +39,43 @@ namespace Core
             participants.Add(participant);
         }
 
+        private void RecycleParticipants()
+        {
+            foreach (ParticipantBehaviour participant in participants)
+                participant.Recycle(pool);
+
+            participants.Clear();
+        }
+
         private void Update()
         {
             if (match == null)
                 return;
 
             match.Update(Time.deltaTime, GetDirectionInput());
+        }
+
+        private void Defeat()
+        {
+            match = null;
+            UIManager.Instance.DisplayView<DefeatView>();
+        }
+
+        private void RestartGame(EventRestartGame context)
+        {
+            RecycleParticipants();
+            StartGame(new EventStartGame());
+        }
+
+        private void BackToMenu(EventBackToMenu context)
+        {
+            RecycleParticipants();
+            UIManager.Instance.DisplayView<MenuView>();
+        }
+
+        private void ExitGame(EventExitGame context)
+        {
+            Application.Quit();
         }
 
         private Vector2Int GetDirectionInput()
@@ -98,6 +93,14 @@ namespace Core
                 return Vector2Int.down;
 
             return Vector2Int.zero;
+        }
+
+        void OnDisable()
+        {
+            EventBus.Unregister<EventStartGame>(StartGame);
+            EventBus.Unregister<EventExitGame>(ExitGame);
+            EventBus.Unregister<EventRestartGame>(RestartGame);
+            EventBus.Unregister<EventBackToMenu>(BackToMenu);
         }
     }
 }

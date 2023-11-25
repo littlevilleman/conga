@@ -18,7 +18,6 @@ namespace Core
         public float Cadence => cadence;
         public Action OnStep { get => step; set => step = value; }
 
-
         public void Update(float time)
         {
             stepCooldown -= time;

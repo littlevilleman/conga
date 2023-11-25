@@ -7,17 +7,15 @@ namespace Client
     public class ParticipantBehaviour : MonoBehaviour, IPoolable<ParticipantBehaviour>
     {
         private IParticipant participant;
-        private IPool<ParticipantBehaviour> pool;
 
         [SerializeField] private SpriteRenderer spriteRenderer;
         private int currentFrame;
 
         private float timeCount = 0f;
-        private float animationTime = .15f;
+        private float animationTime = .1f;
 
         public void Setup(IParticipant participantSetup, IPool<ParticipantBehaviour> poolSetup)
         {
-            pool = poolSetup;
             participant = participantSetup;
             participant.OnMove += Move;
 
@@ -54,7 +52,7 @@ namespace Client
             transform.DOMoveY(position.y, .25f);
         }
 
-        public void Recycle()
+        public void Recycle(IPool<ParticipantBehaviour> pool)
         {
             pool.Recycle(this);
         }

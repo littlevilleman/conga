@@ -59,7 +59,6 @@ namespace Core
         void Setup(IParticipant participant);
         void AddParticipant(IParticipant participant);
         void StepOn(IBoard board);
-
         void Update(IBoard board, Vector2Int directionSetup);
     }
 }

@@ -7,7 +7,6 @@ namespace Config
     public class ParticipantConfig : ScriptableObject, IParticipantFactory
     {
         [SerializeField] private string name;
-
         [SerializeField] private Sprite[] sprites;
 
         public string Name => name;

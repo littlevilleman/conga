@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Core
 {
@@ -11,7 +12,6 @@ namespace Core
     {
         Action<IParticipant> OnJoinParticipant { get; set; }
         Action OnDefeat { get; set; }
-
         IEnumerator Launch();
         void Update(float time, Vector2Int directionInput);
     }
@@ -34,7 +34,6 @@ namespace Core
         public Match(List<ParticipantConfig> participants)
         {
             config = participants;
-
             board = new Board(BOARD_SIZE);
             conga = new Conga();
             rythm = new Rythm();
@@ -62,26 +61,41 @@ namespace Core
 
         private void StepOn()
         {
-            Vector2Int location = conga.First.Location + conga.Direction;
-            if (conga.Participants.Count > 1 && conga.Participants.Any(x => x.Location == location))
+            Vector2Int location = board.OverrideLocation(conga.First.Location + conga.Direction);
+
+            if (CheckDefeat(location))
             {
                 defeat?.Invoke();
                 return;
             }
             
-            if (location == awaitingParticipant.Location)
+            if (CheckJoin(location))
             {
-                conga.AddParticipant(awaitingParticipant);
-                awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
                 joinParticipant?.Invoke(awaitingParticipant);
+                return;
             }
 
             conga.StepOn(board);
         }
 
+        private bool CheckJoin(Vector2Int location)
+        {
+            if (location != awaitingParticipant.Location)
+                return false;
+            
+            conga.AddParticipant(awaitingParticipant);
+            awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
+            return true;
+        }
+
+        private bool CheckDefeat(Vector2Int location)
+        {
+            return conga.Participants.Count > 1 && conga.Participants.Any(x => x.Location == location);
+        }
+
         private IParticipantFactory GetRandomFactory(bool allowClone = true)
         {
-            int index = UnityEngine.Random.Range(0, config.Count);
+            int index = Random.Range(0, config.Count);
             var factory = config[index];
 
             if (!allowClone)

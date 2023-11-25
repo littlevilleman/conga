@@ -9,7 +9,6 @@ namespace Core
     {
         Vector2Int GetEmptyLocation(List<IParticipant> participants);
         Vector2Int OverrideLocation(Vector2Int lcoation);
-        //Vector2Int OverrideDirection(Vector2Int location, Vector2Int direction);
     }
 
     public class Board : IBoard
@@ -17,8 +16,6 @@ namespace Core
         public Vector2Int size;
 
         public int LocationsCount => size.x * size.y;
-
-        private static Vector2Int[] directions = { Vector2Int.up, Vector2Int.right, Vector2Int.left, Vector2Int.down, };
 
         public Board(int sizeSetup)
         {
@@ -42,20 +39,7 @@ namespace Core
             return location;
         }
 
-        public Vector2Int OverrideDirection(Vector2Int location, Vector2Int direction)
-        {
-            //if (IsValidLocation(location + direction))
-            //    return direction;
-            //
-            //foreach (var d in directions)
-            //{
-            //    if (IsValidLocation(location + d))
-            //        return d;
-            //}
-
-            return direction;
-        }
-
+        //TODO
         public Vector2Int GetEmptyLocation(List<IParticipant> participants)
         {
             List<Vector2Int> emptyLocations = new List<Vector2Int>();

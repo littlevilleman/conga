@@ -8,7 +8,7 @@ namespace Core
     public interface IBoard
     {
         Vector2Int GetEmptyLocation(List<IParticipant> participants);
-        Vector2Int OverrideLocation(Vector2Int lcoation);
+        Vector2Int GetBoardLocation(Vector2Int lcoation);
     }
 
     public class Board : IBoard
@@ -22,7 +22,7 @@ namespace Core
             size = new Vector2Int(sizeSetup, sizeSetup);
         }
 
-        public Vector2Int OverrideLocation(Vector2Int location)
+        public Vector2Int GetBoardLocation(Vector2Int location)
         {
             if (location.x < 0)
                 return location + Vector2Int.right * size.x;

@@ -2,15 +2,15 @@ using Config;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 using Random = UnityEngine.Random;
 
 namespace Core
 {
     public interface IMatch
     {
-        Action<IParticipant> OnJoinParticipant { get; set; }
+        Action<IParticipant> OnAddParticipant { get; set; }
         Action OnDefeat { get; set; }
         IEnumerator Launch();
         void Update(float time, Vector2Int directionInput);
@@ -22,14 +22,13 @@ namespace Core
         private IRythm rythm;
         private IConga conga;
         private IParticipant awaitingParticipant;
+        private Action<IParticipant> addParticipant;
 
         private List<ParticipantConfig> config;
-        private Action<IParticipant> joinParticipant;
-        private Action defeat;
 
         private const int BOARD_SIZE = 9;
-        public Action<IParticipant> OnJoinParticipant { get => joinParticipant; set => joinParticipant = value; }
-        public Action OnDefeat { get => defeat; set => defeat = value; }
+        public Action<IParticipant> OnAddParticipant { get => addParticipant; set => addParticipant = value; }
+        public Action OnDefeat { get => conga.OnCrash; set => conga.OnCrash = value; }
 
         public Match(List<ParticipantConfig> participants)
         {
@@ -47,8 +46,8 @@ namespace Core
         {
             yield return null;
 
-            joinParticipant?.Invoke(conga.First);
-            joinParticipant?.Invoke(awaitingParticipant);
+            OnAddParticipant?.Invoke(conga.First);
+            OnAddParticipant?.Invoke(awaitingParticipant);
         }
 
         public void Update(float time, Vector2Int directionInput)
@@ -58,39 +57,23 @@ namespace Core
             if (directionInput != Vector2Int.zero)
                 conga.Update(board, directionInput);
         }
-
         private void StepOn()
         {
-            Vector2Int location = board.OverrideLocation(conga.First.Location + conga.Direction);
-
-            if (CheckDefeat(location))
-            {
-                defeat?.Invoke();
-                return;
-            }
             
-            if (CheckJoin(location))
+            if (board.GetBoardLocation(conga.First.Location + conga.Direction) == awaitingParticipant.Location)
             {
-                joinParticipant?.Invoke(awaitingParticipant);
+                AddParticipant();
                 return;
             }
 
             conga.StepOn(board);
         }
 
-        private bool CheckJoin(Vector2Int location)
+        private void AddParticipant()
         {
-            if (location != awaitingParticipant.Location)
-                return false;
-            
             conga.AddParticipant(awaitingParticipant);
             awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
-            return true;
-        }
-
-        private bool CheckDefeat(Vector2Int location)
-        {
-            return conga.Participants.Count > 1 && conga.Participants.Any(x => x.Location == location);
+            addParticipant?.Invoke(awaitingParticipant);
         }
 
         private IParticipantFactory GetRandomFactory(bool allowClone = true)

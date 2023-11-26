@@ -26,7 +26,7 @@ namespace Core
             UIManager.Instance.HideAllViews();
 
             match = new Match(config);
-            match.OnJoinParticipant += AddParticipant;
+            match.OnAddParticipant += AddParticipant;
             match.OnDefeat += Defeat;
 
             StartCoroutine(match.Launch());

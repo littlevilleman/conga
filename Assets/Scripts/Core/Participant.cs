@@ -8,11 +8,11 @@ namespace Core
     {
         private ParticipantConfig config;
         private Vector2Int location;
-        private Action<Vector2Int, Vector2Int> move;
+        private Action<Vector2Int, Vector2Int, bool> move;
 
         public ParticipantConfig Config => config;
         public Vector2Int Location => location;
-        public Action<Vector2Int, Vector2Int> OnMove { get => move; set => move = value; }
+        public Action<Vector2Int, Vector2Int, bool> OnMove { get => move; set => move = value; }
 
         public Participant(ParticipantConfig configSetup, Vector2Int locationSetup)
         {
@@ -22,8 +22,24 @@ namespace Core
 
         public void Move(IBoard board, Vector2Int direction)
         {
-            location = board.OverrideLocation(location + direction);
-            move?.Invoke(location, direction);
+            if (Mathf.Abs(direction.x) > 1)
+                direction.x -= Math.Sign(direction.x) * 9;
+            else if (Mathf.Abs(direction.y) > 1)
+                direction.y -= Math.Sign(direction.y) * 9;
+
+            var absoluteLocation = location + direction;
+
+            location = board.GetBoardLocation(absoluteLocation);
+            move?.Invoke(absoluteLocation, direction, location != absoluteLocation);
+        }
+
+        public void Follow(IBoard board, Vector2Int toLocation)
+        {
+            var dir = toLocation - location;
+
+
+            location = board.GetBoardLocation(toLocation);
+            move?.Invoke(toLocation, dir, location != toLocation);
         }
     }
 
@@ -31,8 +47,9 @@ namespace Core
     {
         ParticipantConfig Config { get; }
         Vector2Int Location { get; }
-        Action<Vector2Int, Vector2Int> OnMove { get; set; }
+        Action<Vector2Int, Vector2Int, bool> OnMove { get; set; }
 
+        void Follow(IBoard board, Vector2Int toLocation);
         void Move(IBoard board, Vector2Int location);
     }
 

@@ -14,8 +14,7 @@ namespace Config
 
         public IParticipant Build(Vector2Int location)
         {
-            IParticipant participant = new Participant(this, location);
-            return participant;
+            return new Participant(this, location);
         }
     }
 }

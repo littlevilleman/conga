@@ -1,13 +1,13 @@
-using Client;
-using Config;
+using Core;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Core
+namespace Client
 {
     public class MatchManager : MonoBehaviour
     {
-        [SerializeField] private List<ParticipantConfig> config;
+        [SerializeField] private ConfigManager configManager;
+        [SerializeField] private InputManager inputManager;
         [SerializeField] private ParticipantPool pool;
 
         private IMatch match;
@@ -21,11 +21,19 @@ namespace Core
             EventBus.Register<EventBackToMenu>(BackToMenu);
         }
 
+        private void Update()
+        {
+            if (match == null)
+                return;
+
+            match.Update(Time.deltaTime, inputManager.GetDirectionInput());
+        }
+
         private void StartGame(EventStartGame context)
         {
             UIManager.Instance.HideAllViews();
 
-            match = new Match(config);
+            match = new Match(configManager.Participants, configManager.Rythm);
             match.OnAddParticipant += AddParticipant;
             match.OnDefeat += Defeat;
 
@@ -45,14 +53,6 @@ namespace Core
                 participant.Recycle(pool);
 
             participants.Clear();
-        }
-
-        private void Update()
-        {
-            if (match == null)
-                return;
-
-            match.Update(Time.deltaTime, GetDirectionInput());
         }
 
         private void Defeat()
@@ -76,23 +76,6 @@ namespace Core
         private void ExitGame(EventExitGame context)
         {
             Application.Quit();
-        }
-
-        private Vector2Int GetDirectionInput()
-        {
-            if (Input.GetKey(KeyCode.W))
-                return Vector2Int.up;
-
-            if (Input.GetKey(KeyCode.D))
-                return Vector2Int.right;
-
-            if (Input.GetKey(KeyCode.A))
-                return Vector2Int.left;
-
-            if (Input.GetKey(KeyCode.S))
-                return Vector2Int.down;
-
-            return Vector2Int.zero;
         }
 
         void OnDisable()

@@ -5,6 +5,18 @@ using System;
 
 namespace Core
 {
+    public interface IConga
+    {
+        public Vector2Int Direction { get; }
+        public IParticipant First { get; }
+        public List<IParticipant> Participants { get; }
+        Action OnCrash { get; set; }
+
+        void Setup(IParticipant participant);
+        void AddParticipant(IParticipant participant);
+        void StepOn(IBoard board, IRythm rythm);
+        void Update(IBoard board, Vector2Int directionSetup);
+    }
     public class Conga : IConga
     {
         private List<IParticipant> participants = new List<IParticipant>();
@@ -12,7 +24,6 @@ namespace Core
         private Vector2Int lockDirection;
         private Action crash;
 
-        public int Size => participants.Count;
         public IParticipant First => participants?.ToArray()[0];
         public List<IParticipant> Participants => participants?.ToList();
         public Vector2Int Direction => direction;
@@ -37,46 +48,29 @@ namespace Core
             participants.Insert(0, participant);
         }
 
-        public void StepOn(IBoard board)
+        public void StepOn(IBoard board, IRythm rythm)
         {
             if (First == null)
                 return;
 
-            Vector2Int previousLocation = First.Location;
-            Vector2Int dir = direction;
             lockDirection = -direction;
+            Vector2Int previousLocation = First.Location;
+            First.Move(board, rythm, direction);
 
-            if (CheckCrash())
+            for (int i = 1; i < participants.Count; i++)
             {
-                crash?.Invoke();
-                return;
+                Vector2Int followDirection = previousLocation - participants[i].Location;
+                previousLocation = participants[i].Location;
+                participants[i].Move(board, rythm, followDirection);
             }
 
-            foreach (IParticipant participant in participants)
-            {
-                dir = participant == First ? dir : previousLocation - participant.Location;
-                previousLocation = participant.Location;
-                participant.Move(board, dir);
-            }
+            CheckCrash();
         }
 
-        private bool CheckCrash()
+        private void CheckCrash()
         {
-            return participants.Any(x => x != First && x.Location == First.Location);
+            if (participants.Any(x => x != First && x.Location == First.Location))
+                crash?.Invoke();
         }
-    }
-
-
-    public interface IConga
-    {
-        public Vector2Int Direction { get; }
-        public IParticipant First { get; }
-        public List<IParticipant> Participants { get; }
-        Action OnCrash { get; set; }
-
-        void Setup(IParticipant participant);
-        void AddParticipant(IParticipant participant);
-        void StepOn(IBoard board);
-        void Update(IBoard board, Vector2Int directionSetup);
     }
 }

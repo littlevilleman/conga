@@ -2,24 +2,31 @@ using System.Collections.Generic;
 using System.Linq;
 using Vector2Int = UnityEngine.Vector2Int;
 using Random = UnityEngine.Random;
+using UnityEngine;
+using System;
 
 namespace Core
 {
     public interface IBoard
     {
+        Vector2Int Size { get; }
         Vector2Int GetEmptyLocation(List<IParticipant> participants);
-        Vector2Int GetBoardLocation(Vector2Int lcoation);
+        Vector2Int GetBoardLocation(Vector2Int location);
+        Vector2Int GetBoardDirection(Vector2Int direction);
     }
 
     public class Board : IBoard
     {
         public Vector2Int size;
 
+        private const int BOARD_SIZE = 9;
         public int LocationsCount => size.x * size.y;
 
-        public Board(int sizeSetup)
+        public Vector2Int Size => size;
+
+        public Board()
         {
-            size = new Vector2Int(sizeSetup, sizeSetup);
+            size = new Vector2Int(BOARD_SIZE, BOARD_SIZE);
         }
 
         public Vector2Int GetBoardLocation(Vector2Int location)
@@ -57,6 +64,17 @@ namespace Core
 
             int random = Random.Range(0, emptyLocations.Count);
             return emptyLocations[random];
+        }
+
+        public Vector2Int GetBoardDirection(Vector2Int direction)
+        {
+            if (Mathf.Abs(direction.x) > 1)
+                direction.x -= Math.Sign(direction.x) * size.x;
+
+            else if (Mathf.Abs(direction.y) > 1)
+                direction.y -= Math.Sign(direction.y) * size.x;
+
+            return direction;
         }
     }
 }

@@ -15,6 +15,7 @@ namespace Core
         Vector2Int Location { get; }
         Action<Vector2Int, Vector2Int, float> OnMove { get; set; }
 
+        Action OnJoinConga { get; set; }
         void Move(IBoard board, IRythm rythm, Vector2Int location);
     }
 
@@ -23,10 +24,12 @@ namespace Core
         private ParticipantConfig config;
         private Vector2Int location;
         private Action<Vector2Int, Vector2Int, float> move;
+        private Action join;
 
         public ParticipantConfig Config => config;
         public Vector2Int Location => location;
         public Action<Vector2Int, Vector2Int, float> OnMove { get => move; set => move = value; }
+        public Action OnJoinConga { get => join; set => join = value; }
 
         public Participant(ParticipantConfig configSetup, Vector2Int locationSetup)
         {

@@ -9039,7 +9039,6 @@ MonoBehaviour:
   participantsConfig:
   - {fileID: 11400000, guid: 044d7cc8677d1aa4a88f2ca1e5541527, type: 2}
   - {fileID: 11400000, guid: b7e81c7f253fd9d4ea6ed7aae77486c3, type: 2}
-  - {fileID: 11400000, guid: daeb11d6e5b1aeb4b9ac8a5fd0ae9a6e, type: 2}
   - {fileID: 11400000, guid: 5b6b12ca3f7c1c34bb651c583cf05d31, type: 2}
   - {fileID: 11400000, guid: af29645dc987a0549a4b1966bbef8f55, type: 2}
   - {fileID: 11400000, guid: 8be6a95f71105c04ca11cd64657d768c, type: 2}
@@ -9048,8 +9047,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 527f69d47d548d74dbae2709d31b6c3c, type: 2}
   - {fileID: 11400000, guid: 41be5357beed44347a0b880f4f054b97, type: 2}
   - {fileID: 11400000, guid: 4b00dcf4a15323045bdf6f86d922c08c, type: 2}
-  - {fileID: 11400000, guid: 62344904908f9a34eb5b1a5244e3cb94, type: 2}
-  - {fileID: 11400000, guid: a894994e407e84143b59b2ea8f98728e, type: 2}
   - {fileID: 11400000, guid: d866e243f7ea5e34fa36a5e9ab13180a, type: 2}
   - {fileID: 11400000, guid: 311cda47ccb8efa4380be9415ec30c91, type: 2}
   - {fileID: 11400000, guid: 048a28fc516d20b4dbcc0fb5ea44f4f5, type: 2}

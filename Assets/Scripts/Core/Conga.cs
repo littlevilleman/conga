@@ -46,12 +46,19 @@ namespace Core
         public void AddParticipant(IParticipant participant)
         {
             participants.Insert(0, participant);
+            participant.OnJoinConga?.Invoke();
         }
 
         public void StepOn(IBoard board, IRythm rythm)
         {
             if (First == null)
                 return;
+
+            if (CheckCrash())
+            {
+                crash?.Invoke();
+                return;
+            }
 
             lockDirection = -direction;
             Vector2Int previousLocation = First.Location;
@@ -63,14 +70,14 @@ namespace Core
                 previousLocation = participants[i].Location;
                 participants[i].Move(board, rythm, followDirection);
             }
-
-            CheckCrash();
         }
 
-        private void CheckCrash()
+        private bool CheckCrash()
         {
             if (participants.Any(x => x != First && x.Location == First.Location))
-                crash?.Invoke();
+                return true;
+
+            return false;
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Core
             yield return null;
 
             OnAddParticipant?.Invoke(conga.First, false);
-            OnAddParticipant?.Invoke(awaitingParticipant, false);
+            OnAddParticipant?.Invoke(awaitingParticipant, true);
         }
 
         public void Update(float time, Vector2Int directionInput)

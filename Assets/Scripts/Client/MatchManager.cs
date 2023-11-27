@@ -44,13 +44,13 @@ namespace Client
             StartCoroutine(match.Launch());
         }
 
-        private void AddParticipant(IParticipant newParticipant, bool isJoin)
+        private void AddParticipant(IParticipant newParticipant, bool isAwaiting = true)
         {
             ParticipantBehaviour participant = pool.PullElement();
-            participant.Setup(newParticipant, pool);
+            participant.Setup(newParticipant, pool, isAwaiting);
             participants.Add(participant);
 
-            if (isJoin)
+            if (isAwaiting)
                 audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA);
         }
 

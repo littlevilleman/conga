@@ -8,6 +8,7 @@ namespace Client
     {
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private TeleportEffect teleportEffect;
+        private Material material;
 
         private IParticipant participant;
         private FrameAnimator animator;
@@ -16,13 +17,19 @@ namespace Client
 
         private Vector3 Position => GetPosition(participant.Location);
 
-        public void Setup(IParticipant participantSetup, IPool<ParticipantBehaviour> poolSetup)
+        private void Start()
+        {
+        }
+
+        public void Setup(IParticipant participantSetup, IPool<ParticipantBehaviour> poolSetup, bool isAwaiting = true)
         {
             participant = participantSetup;
+            participant.OnJoinConga += Join;
             participant.OnMove += Move;
             animator = new FrameAnimator(participant.Config.Sprites.Length);
 
             transform.position = Position;
+            spriteRenderer.material.SetFloat("_IsAwaiting", isAwaiting ? 1f : 0f);
         }
 
         private void Update()
@@ -30,6 +37,11 @@ namespace Client
             animator?.Update(Time.deltaTime);
             spriteRenderer.sprite = participant.Config.Sprites[animator.CurrentFrame];
             teleportEffect.UpdateFrame(spriteRenderer.sprite);
+        }
+
+        private void Join()
+        {
+            spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
         }
 
         private void Move(Vector2Int location, Vector2Int direction, float time)

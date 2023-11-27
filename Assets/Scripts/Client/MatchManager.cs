@@ -1,13 +1,16 @@
 using Core;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Client
 {
+
     public class MatchManager : MonoBehaviour
     {
         [SerializeField] private ConfigManager configManager;
         [SerializeField] private InputManager inputManager;
+        [SerializeField] private AudioManager audioManager;
         [SerializeField] private ParticipantPool pool;
 
         private IMatch match;
@@ -31,20 +34,24 @@ namespace Client
 
         private void StartGame(EventStartGame context)
         {
-            UIManager.Instance.HideAllViews();
+            UIManager.Instance.DisplayView<MatchView>();
 
             match = new Match(configManager.Participants, configManager.Rythm);
             match.OnAddParticipant += AddParticipant;
             match.OnDefeat += Defeat;
 
+            audioManager.Setup(match.Rythm);
             StartCoroutine(match.Launch());
         }
 
-        private void AddParticipant(IParticipant newParticipant)
+        private void AddParticipant(IParticipant newParticipant, bool isJoin)
         {
             ParticipantBehaviour participant = pool.PullElement();
             participant.Setup(newParticipant, pool);
             participants.Add(participant);
+
+            if (isJoin)
+                audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA);
         }
 
         private void RecycleParticipants()

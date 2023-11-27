@@ -9,8 +9,10 @@ namespace Core
 {
     public interface IMatch
     {
-        Action<IParticipant> OnAddParticipant { get; set; }
+        Action<IParticipant, bool> OnAddParticipant { get; set; }
         Action OnDefeat { get; set; }
+        IRythm Rythm { get;}
+
         IEnumerator Launch();
         void Update(float time, Vector2Int directionInput);
     }
@@ -22,12 +24,12 @@ namespace Core
         private IConga conga;
 
         private IParticipant awaitingParticipant;
-        private Action<IParticipant> addParticipant;
+        private Action<IParticipant, bool> addParticipant;
         private List<ParticipantConfig> config;
 
-        public Action<IParticipant> OnAddParticipant { get => addParticipant; set => addParticipant = value; }
+        public Action<IParticipant, bool> OnAddParticipant { get => addParticipant; set => addParticipant = value; }
         public Action OnDefeat { get => conga.OnCrash; set => conga.OnCrash = value; }
-
+        public IRythm Rythm => rythm;
         public Match(List<ParticipantConfig> participantsConfig, RythmConfig rythmConfig)
         {
             config = participantsConfig;
@@ -45,8 +47,8 @@ namespace Core
         {
             yield return null;
 
-            OnAddParticipant?.Invoke(conga.First);
-            OnAddParticipant?.Invoke(awaitingParticipant);
+            OnAddParticipant?.Invoke(conga.First, false);
+            OnAddParticipant?.Invoke(awaitingParticipant, false);
         }
 
         public void Update(float time, Vector2Int directionInput)
@@ -62,7 +64,7 @@ namespace Core
             {
                 conga.AddParticipant(awaitingParticipant);
                 awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
-                addParticipant?.Invoke(awaitingParticipant);
+                addParticipant?.Invoke(awaitingParticipant, true);
                 return;
             }
 

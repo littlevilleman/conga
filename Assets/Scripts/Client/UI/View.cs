@@ -10,11 +10,11 @@ namespace Client
 
     public abstract class View : MonoBehaviour, IView
     {
-        public void Display()
+        public virtual void Display()
         {
             gameObject.SetActive(true);
         }
-        public void Hide()
+        public virtual void Hide()
         {
             gameObject.SetActive(false);
         }

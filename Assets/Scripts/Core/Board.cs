@@ -10,6 +10,7 @@ namespace Core
     public interface IBoard
     {
         Vector2Int Size { get; }
+        Vector2Int CenterLocation { get; }
         Vector2Int GetEmptyLocation(List<IParticipant> participants);
         Vector2Int GetBoardLocation(Vector2Int location);
         Vector2Int GetBoardDirection(Vector2Int direction);
@@ -23,6 +24,7 @@ namespace Core
         public int LocationsCount => size.x * size.y;
 
         public Vector2Int Size => size;
+        public Vector2Int CenterLocation => new Vector2Int(Mathf.FloorToInt(size.x / 2f), Mathf.FloorToInt(size.y / 2f));
 
         public Board()
         {

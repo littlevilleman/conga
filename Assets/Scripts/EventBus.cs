@@ -69,3 +69,18 @@ public class EventBackToMenu : EventContext
 {
 
 }
+
+public class EventChangeDifficulty : EventContext
+{
+    public int difficulty;
+}
+
+public class EventMuteMusic : EventContext
+{
+    public bool mute;
+}
+
+public class EventMuteSound: EventContext
+{
+    public bool mute;
+}

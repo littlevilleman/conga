@@ -1,6 +1,8 @@
 using Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace Client
@@ -19,21 +21,48 @@ namespace Client
     {
         public ESoundCode code;
         public AudioClip clip;
+        public bool mute;
     }
+
+    [Serializable]
     public class Music
     {
         public EMusicCode code;
         public AudioClip clip;
+        public bool mute;
     }
 
     public class AudioManager : MonoBehaviour
     {
         [SerializeField] private List<Sound> sounds;
         [SerializeField] private List<Music> music;
-        [SerializeField] private AudioSource audioSource;
         [SerializeField] private AudioSource musicSource;
+        private List<AudioSource> audioSources;
+
+        private bool muteSound;
 
         private IRythm rythm;
+
+        private void Awake()
+        {
+            audioSources = GetComponents<AudioSource>().ToList();
+        }
+
+        private void OnEnable()
+        {
+            EventBus.Register<EventMuteMusic>(MuteMusic);
+            EventBus.Register<EventMuteSound>(MuteSound);
+        }
+
+        private void MuteMusic(EventMuteMusic context)
+        {
+            musicSource.mute = context.mute;
+        }
+
+        private void MuteSound(EventMuteSound context)
+        {
+            muteSound = context.mute;
+        }
 
         public void Setup(IRythm rythmSetup)
         {
@@ -43,7 +72,7 @@ namespace Client
 
         private void OnStep()
         {
-            musicSource.pitch = Mathf.Clamp(2 * (1 - rythm.Cadence), 1f, 2f);
+            //musicSource.pitch = Mathf.Clamp(2 * (1 - rythm.Cadence), 1f, 2f);
             //Debug.Log();
         }
 
@@ -51,11 +80,17 @@ namespace Client
         {
             Sound sound = sounds.Find(x => x.code == code);
 
-            if (sound == null)
+            if (muteSound || sound == null || sound.mute)
                 return;
 
-            audioSource.clip = sound.clip;
-            audioSource.Play();
+            AudioSource source = PullAudioSource();
+            source.clip = sound.clip;
+            source.Play();
+        }
+
+        private AudioSource PullAudioSource()
+        {
+            return audioSources.Find(x => !x.isPlaying);
         }
 
         public void PlayMusic(EMusicCode code)
@@ -67,6 +102,12 @@ namespace Client
 
             musicSource.clip = music.clip;
             musicSource.Play();
+        }
+
+        private void OnDisable()
+        {
+            EventBus.Unregister<EventMuteMusic>(MuteMusic);
+            EventBus.Unregister<EventMuteSound>(MuteSound);
         }
     }
 }

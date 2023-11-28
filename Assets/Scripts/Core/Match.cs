@@ -9,6 +9,7 @@ namespace Core
 {
     public interface IMatch
     {
+        Action OnStart { get; set; }
         Action<IParticipant, bool> OnAddParticipant { get; set; }
         Action OnDefeat { get; set; }
         IRythm Rythm { get;}
@@ -24,12 +25,15 @@ namespace Core
         private IConga conga;
 
         private IParticipant awaitingParticipant;
+        private Action start;
         private Action<IParticipant, bool> addParticipant;
         private List<ParticipantConfig> config;
 
+        public IRythm Rythm => rythm;
+        public Action OnStart { get => start; set => start = value; }
         public Action<IParticipant, bool> OnAddParticipant { get => addParticipant; set => addParticipant = value; }
         public Action OnDefeat { get => conga.OnCrash; set => conga.OnCrash = value; }
-        public IRythm Rythm => rythm;
+
         public Match(List<ParticipantConfig> participantsConfig, RythmConfig rythmConfig)
         {
             config = participantsConfig;
@@ -37,7 +41,7 @@ namespace Core
             board = new Board();
             conga = new Conga();
 
-            conga.Setup(GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants)));
+            conga.Setup(GetRandomFactory().Build(board.CenterLocation));
             awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
 
             rythm.OnStep += StepOn;
@@ -45,10 +49,15 @@ namespace Core
 
         public IEnumerator Launch()
         {
-            yield return null;
-
+            //wait for view transition
             OnAddParticipant?.Invoke(conga.First, false);
+            yield return new WaitForSeconds(1f);
+
             OnAddParticipant?.Invoke(awaitingParticipant, true);
+
+            yield return new WaitForSeconds(1f);
+
+            start?.Invoke();
         }
 
         public void Update(float time, Vector2Int directionInput)

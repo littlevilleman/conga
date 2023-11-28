@@ -17,9 +17,6 @@ namespace Client
 
         private Vector3 Position => GetPosition(participant.Location);
 
-        private void Start()
-        {
-        }
 
         public void Setup(IParticipant participantSetup, IPool<ParticipantBehaviour> poolSetup, bool isAwaiting = true)
         {
@@ -41,7 +38,21 @@ namespace Client
 
         private void Join()
         {
-            spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
+            Color fromColor = spriteRenderer.material.GetColor("_ColorD");
+            Color toColor = spriteRenderer.material.GetColor("_ColorA");
+
+            spriteRenderer.material.DOColor(toColor,"_AwaitingColor",.25f).OnStepComplete(OnStepComplete);
+
+            void OnStepComplete()
+            {
+                toColor.a = 0f;
+                spriteRenderer.material.DOFloat(0f, "_IsAwaiting", .25f).OnComplete(OnComplete);
+            }
+
+            void OnComplete()
+            {
+                spriteRenderer.material.SetColor("_AwaitingColor", fromColor);
+            }
         }
 
         private void Move(Vector2Int location, Vector2Int direction, float time)

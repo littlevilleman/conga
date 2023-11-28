@@ -22,6 +22,12 @@ namespace Client
             EventBus.Register<EventExitGame>(ExitGame);
             EventBus.Register<EventRestartGame>(RestartGame);
             EventBus.Register<EventBackToMenu>(BackToMenu);
+            EventBus.Register<EventChangeDifficulty>(ChangeDifficulty);
+        }
+
+        private void ChangeDifficulty(EventChangeDifficulty context)
+        {
+
         }
 
         private void Update()
@@ -34,14 +40,23 @@ namespace Client
 
         private void StartGame(EventStartGame context)
         {
-            UIManager.Instance.DisplayView<MatchView>();
+            UIManager.Instance.DisplayView<MatchView>(true, true);
 
             match = new Match(configManager.Participants, configManager.Rythm);
             match.OnAddParticipant += AddParticipant;
+            match.OnStart += OnStartGame;
             match.OnDefeat += Defeat;
 
             audioManager.Setup(match.Rythm);
+            audioManager.PlaySound(ESoundCode.MATCH_START);
+
             StartCoroutine(match.Launch());
+
+        }
+
+        private void OnStartGame()
+        {
+
         }
 
         private void AddParticipant(IParticipant newParticipant, bool isAwaiting = true)
@@ -65,7 +80,9 @@ namespace Client
         private void Defeat()
         {
             match = null;
-            UIManager.Instance.DisplayView<DefeatView>();
+            UIManager.Instance.DisplayView<DefeatView>(true, false, true);
+
+            audioManager.PlaySound(ESoundCode.MATCH_DEFEAT);
         }
 
         private void RestartGame(EventRestartGame context)

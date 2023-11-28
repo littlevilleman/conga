@@ -39,7 +39,7 @@ Material:
     - _BUILTIN_ZTest: 4
     - _BUILTIN_ZWrite: 0
     - _BUILTIN_ZWriteControl: 0
-    - _IsAwaiting: 1
+    - _IsAwaiting: 0
     - _IsAwaiting_: 0
     - _IsAwaiting_1: 1
     m_Colors:

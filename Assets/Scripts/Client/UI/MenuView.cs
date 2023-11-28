@@ -28,6 +28,7 @@ namespace Client
 
         private void OnCompleteIntro()
         {
+            menuSelector.Display();
         }
 
         private void OnClickStartGame()
@@ -37,7 +38,7 @@ namespace Client
 
         private void OnClickOptions()
         {
-
+            UIManager.Instance.DisplayView<OptionsView>();
         }
 
         private void OnClickExitGame()
@@ -53,6 +54,7 @@ namespace Client
 
             intro.onComplete -= OnCompleteIntro;
             intro.Stop();
+            menuSelector.Hide();
         }
     }
 }

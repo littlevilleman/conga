@@ -1,5 +1,5 @@
 using Core;
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,7 +45,7 @@ namespace Client
             match = new Match(configManager.Participants, configManager.Rythm);
             match.OnAddParticipant += AddParticipant;
             match.OnStart += OnStartGame;
-            match.OnDefeat += Defeat;
+            match.OnDefeat += OnDefeat;
 
             audioManager.Setup(match.Rythm);
             audioManager.PlaySound(ESoundCode.MATCH_START);
@@ -69,20 +69,22 @@ namespace Client
                 audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA);
         }
 
-        private void RecycleParticipants()
+        private void OnDefeat()
         {
-            foreach (ParticipantBehaviour participant in participants)
-                participant.Recycle(pool);
-
-            participants.Clear();
+            StartCoroutine(CloseGame());
         }
 
-        private void Defeat()
+        private IEnumerator CloseGame()
         {
-            match = null;
-            UIManager.Instance.DisplayView<DefeatView>(true, false, true);
-
             audioManager.PlaySound(ESoundCode.MATCH_DEFEAT);
+
+            yield return match.Close();
+
+            match = null;
+
+            yield return new WaitForSeconds(1f);
+
+            UIManager.Instance.DisplayView<DefeatView>(true, false, true);
         }
 
         private void RestartGame(EventRestartGame context)
@@ -100,6 +102,14 @@ namespace Client
         private void ExitGame(EventExitGame context)
         {
             Application.Quit();
+        }
+
+        private void RecycleParticipants()
+        {
+            foreach (ParticipantBehaviour participant in participants)
+                participant.Recycle(pool);
+
+            participants.Clear();
         }
 
         void OnDisable()

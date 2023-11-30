@@ -2,6 +2,7 @@ using Core;
 using DG.Tweening;
 using System;
 using UnityEngine;
+using static UnityEditor.FilePathAttribute;
 
 namespace Client
 {
@@ -27,6 +28,7 @@ namespace Client
             animator = new FrameAnimator(participant.Config.Sprites.Length);
 
             transform.position = Position;
+            spriteRenderer.sortingOrder = 10 - participant.Location.y;
 
             PlaySpawnEffect(isAwaiting);
         }
@@ -61,7 +63,6 @@ namespace Client
             Color toColor = spriteRenderer.material.GetColor("_ColorA");
             Color toColorb = spriteRenderer.material.GetColor("_ColorC");
 
-
             spriteRenderer.transform.localScale = Vector3.one;
             spriteRenderer.transform.DOScale(Vector3.one * 1.25f, .1f).SetLoops(2, LoopType.Yoyo);
             spriteRenderer.material.DOColor(toColorb, "_BorderColor",.25f).SetLoops(2, LoopType.Yoyo);
@@ -73,7 +74,7 @@ namespace Client
             }
         }
 
-        private void Move(Vector2Int location, Vector2Int direction, float time)
+        private void Move(Vector2Int location, Vector2Int direction, float time, bool crash = false)
         {
             spriteRenderer.flipX = direction.x == 0 ? spriteRenderer.flipX : direction.x > 0f;
             transform.DOMove(GetPosition(location), time).OnComplete(OnMoveComplete);
@@ -85,12 +86,32 @@ namespace Client
             }
 
             spriteRenderer.sortingOrder = 10 - participant.Location.y;
+
+            void OnMoveComplete()
+            {
+                teleportEffect.Stop();
+                transform.position = Position;
+
+                if (crash)
+                    Crash(direction, time * 2f);
+            }
         }
 
-        private void OnMoveComplete()
+        private void Crash(Vector2Int direction, float time)
         {
-            teleportEffect.Stop();
-            transform.position = Position;
+            Color toColor = spriteRenderer.material.GetColor("_ColorA");
+
+            spriteRenderer.sortingOrder += 10;
+            spriteRenderer.material.SetFloat("_IsAwaiting", 1f);
+            spriteRenderer.transform.DOScale(Vector3.one * 1.25f, time).SetLoops(2, LoopType.Yoyo);
+            spriteRenderer.material.DOColor(toColor, "_AwaitingColor", time).OnComplete(OnStepComplete).SetLoops(2, LoopType.Yoyo);
+            transform.DOMove(GetPosition(participant.Location - direction), time);
+
+             void OnStepComplete()
+            {
+                spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
+                spriteRenderer.sortingOrder -= 10 - participant.Location.y;
+            }
         }
 
         private Vector3 GetPosition(Vector2Int location)

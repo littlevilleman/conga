@@ -15,6 +15,7 @@ namespace Core
         IRythm Rythm { get;}
 
         IEnumerator Launch();
+        IEnumerator Close();
         void Update(float time, Vector2Int directionInput);
     }
 
@@ -27,6 +28,7 @@ namespace Core
         private IParticipant awaitingParticipant;
         private Action start;
         private Action<IParticipant, bool> addParticipant;
+        private Action defeat;
 
         private List<ParticipantConfig> config;
         private List<ParticipantConfig> inUseConfig = new ();
@@ -34,7 +36,7 @@ namespace Core
         public IRythm Rythm => rythm;
         public Action OnStart { get => start; set => start = value; }
         public Action<IParticipant, bool> OnAddParticipant { get => addParticipant; set => addParticipant = value; }
-        public Action OnDefeat { get => conga.OnCrash; set => conga.OnCrash = value; }
+        public Action OnDefeat { get => defeat; set => defeat = value; }
 
         public Match(List<ParticipantConfig> participantsConfig, RythmConfig rythmConfig)
         {
@@ -46,7 +48,13 @@ namespace Core
             conga.Setup(GetRandomFactory().Build(board.CenterLocation));
             awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
 
+            conga.OnCrash += OnCrashConga;
             rythm.OnStep += StepOn;
+        }
+
+        private void OnCrashConga(IParticipant first, IParticipant participant)
+        {
+            defeat?.Invoke();
         }
 
         public IEnumerator Launch()
@@ -60,6 +68,11 @@ namespace Core
             yield return new WaitForSeconds(1f);
 
             start?.Invoke();
+        }
+
+        public IEnumerator Close()
+        {
+            yield return rythm.WaitEndOfStep();
         }
 
         public void Update(float time, Vector2Int directionInput)

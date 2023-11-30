@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 
 namespace Core
 {
@@ -7,6 +8,7 @@ namespace Core
         float Cadence { get; }
         Action OnStep { get; set; }
         void Update(float time, int participants);
+        IEnumerator WaitEndOfStep();
     }
 
     public class Rythm :IRythm
@@ -40,6 +42,11 @@ namespace Core
         private float GetCadence(int participants)
         {
             return config.CadenceCurve.Evaluate(participants);
+        }
+        
+        public IEnumerator WaitEndOfStep()
+        {
+            yield return stepCooldown * .5f;
         }
     }
 }

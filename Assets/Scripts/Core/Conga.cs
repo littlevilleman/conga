@@ -10,7 +10,7 @@ namespace Core
         public Vector2Int Direction { get; }
         public IParticipant First { get; }
         public List<IParticipant> Participants { get; }
-        Action OnCrash { get; set; }
+        Action<IParticipant, IParticipant> OnCrash { get; set; }
 
         void Setup(IParticipant participant);
         void AddParticipant(IParticipant participant);
@@ -22,12 +22,12 @@ namespace Core
         private List<IParticipant> participants = new List<IParticipant>();
         private Vector2Int direction;
         private Vector2Int lockDirection;
-        private Action crash;
+        private Action<IParticipant, IParticipant> crash;
 
         public IParticipant First => participants?.ToArray()[0];
         public List<IParticipant> Participants => participants?.ToList();
         public Vector2Int Direction => direction;
-        public Action OnCrash { get => crash; set => crash = value; }
+        public Action<IParticipant, IParticipant> OnCrash { get => crash; set => crash = value; }
 
         public void Setup(IParticipant participant)
         {
@@ -54,13 +54,16 @@ namespace Core
             if (First == null)
                 return;
 
-            if (CheckCrash())
+            Vector2Int previousLocation = First.Location;
+            
+            if (CheckCrash(previousLocation + direction, out IParticipant crashParticipant))
             {
-                crash?.Invoke();
+                crash?.Invoke(First, crashParticipant);
+
+                First.Move(board, rythm, direction, true);
                 return;
             }
 
-            Vector2Int previousLocation = First.Location;
             First.Move(board, rythm, direction);
 
             for (int i = 1; i < participants.Count; i++)
@@ -73,12 +76,10 @@ namespace Core
             lockDirection = -direction;
         }
 
-        private bool CheckCrash()
+        private bool CheckCrash(Vector2Int location, out IParticipant participant)
         {
-            if (participants.Any(x => x != First && x.Location == First.Location))
-                return true;
-
-            return false;
+            participant = participants.Find(x => x != First && x.Location == location);
+            return participant != null;
         }
     }
 }

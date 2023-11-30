@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Client 
 {
@@ -32,9 +31,9 @@ namespace Client
 
         private IEnumerator DisplayAnimation(float animationTime)
         {
-            foreach (var option in buttons)
+            foreach (MenuButton option in buttons)
             {
-                option.Display(.5f);
+                option.Display(.5f, GetButton(selected) == option);
 
                 yield return new WaitForSeconds(.25f);
             }
@@ -58,7 +57,7 @@ namespace Client
                 GetButton(selected).Button.onClick?.Invoke();
         }
 
-        public void SelectOption(int toOption)
+        private void SelectOption(int toOption)
         {
             toOption = ClampSelection(toOption);
             GetButton(selected)?.Select(false);

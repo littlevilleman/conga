@@ -1,5 +1,6 @@
 using Core;
 using DG.Tweening;
+using System;
 using UnityEngine;
 
 namespace Client
@@ -26,7 +27,25 @@ namespace Client
             animator = new FrameAnimator(participant.Config.Sprites.Length);
 
             transform.position = Position;
-            spriteRenderer.material.SetFloat("_IsAwaiting", isAwaiting ? 1f : 0f);
+
+            PlaySpawnEffect(isAwaiting);
+        }
+
+        private void PlaySpawnEffect(bool isAwaiting)
+        {
+
+            if (isAwaiting)
+            {
+                spriteRenderer.transform.localScale = Vector3.zero;
+                spriteRenderer.material.SetFloat("_IsAwaiting", 1f);
+                spriteRenderer.material.DOFloat(1f, "_IsAwaiting", .25f);
+                spriteRenderer.transform.DOScale(Vector3.one, .25f);
+                //spriteRenderer.transform.DOScale(Vector3.one, .25f);
+            }
+            else
+            {
+                spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
+            }
         }
 
         private void Update()
@@ -40,18 +59,17 @@ namespace Client
         {
             Color fromColor = spriteRenderer.material.GetColor("_ColorD");
             Color toColor = spriteRenderer.material.GetColor("_ColorA");
+            Color toColorb = spriteRenderer.material.GetColor("_ColorC");
 
-            spriteRenderer.material.DOColor(toColor,"_AwaitingColor",.25f).OnStepComplete(OnStepComplete);
+
+            spriteRenderer.transform.localScale = Vector3.one;
+            spriteRenderer.transform.DOScale(Vector3.one * 1.25f, .1f).SetLoops(2, LoopType.Yoyo);
+            spriteRenderer.material.DOColor(toColorb, "_BorderColor",.25f).SetLoops(2, LoopType.Yoyo);
+            spriteRenderer.material.DOColor(toColor,"_AwaitingColor",.25f).OnStepComplete(OnStepComplete).SetLoops(2, LoopType.Yoyo);
 
             void OnStepComplete()
             {
-                toColor.a = 0f;
-                spriteRenderer.material.DOFloat(0f, "_IsAwaiting", .25f).OnComplete(OnComplete);
-            }
-
-            void OnComplete()
-            {
-                spriteRenderer.material.SetColor("_AwaitingColor", fromColor);
+                spriteRenderer.material.DOFloat(0f, "_IsAwaiting", .35f);
             }
         }
 
@@ -65,6 +83,8 @@ namespace Client
                 var fromPosition = GetPosition(participant.Location - direction);
                 teleportEffect.Play(fromPosition, spriteRenderer.flipX);
             }
+
+            spriteRenderer.sortingOrder = 10 - participant.Location.y;
         }
 
         private void OnMoveComplete()

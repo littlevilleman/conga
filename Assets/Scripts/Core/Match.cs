@@ -27,7 +27,9 @@ namespace Core
         private IParticipant awaitingParticipant;
         private Action start;
         private Action<IParticipant, bool> addParticipant;
+
         private List<ParticipantConfig> config;
+        private List<ParticipantConfig> inUseConfig = new ();
 
         public IRythm Rythm => rythm;
         public Action OnStart { get => start; set => start = value; }
@@ -36,7 +38,7 @@ namespace Core
 
         public Match(List<ParticipantConfig> participantsConfig, RythmConfig rythmConfig)
         {
-            config = participantsConfig;
+            config = new List<ParticipantConfig>(participantsConfig);
             rythm = rythmConfig.Build();
             board = new Board();
             conga = new Conga();
@@ -80,13 +82,19 @@ namespace Core
             conga.StepOn(board, rythm);
         }
 
-        private IParticipantFactory GetRandomFactory(bool allowClone = true)
+        private IParticipantFactory GetRandomFactory()
         {
+            if (config.Count == 0)
+            {
+                config.AddRange(inUseConfig);
+                inUseConfig.Clear();
+            }
+
             int index = Random.Range(0, config.Count);
             var factory = config[index];
 
-            if (!allowClone)
-                config.RemoveAt(index);
+            config.RemoveAt(index);
+            inUseConfig.Add(factory);
 
             return factory;
         }

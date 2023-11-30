@@ -60,7 +60,6 @@ namespace Core
                 return;
             }
 
-            lockDirection = -direction;
             Vector2Int previousLocation = First.Location;
             First.Move(board, rythm, direction);
 
@@ -70,6 +69,8 @@ namespace Core
                 previousLocation = participants[i].Location;
                 participants[i].Move(board, rythm, followDirection);
             }
+
+            lockDirection = -direction;
         }
 
         private bool CheckCrash()

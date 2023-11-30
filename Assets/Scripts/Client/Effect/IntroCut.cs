@@ -14,7 +14,6 @@ namespace Client
         private float letterSpawnDelay = .05f;
         private Color initialColor;
 
-
         public Action onComplete;
 
         private void Awake()
@@ -29,7 +28,8 @@ namespace Client
 
         public void Play()
         {
-            StartCoroutine(PlayAnimation());
+            StartCoroutine(PlayLettersAnimation());
+            StartCoroutine(PlayBackgroundAnimation());
         }
         public void Stop()
         {
@@ -37,12 +37,6 @@ namespace Client
             {
                 letter.gameObject.SetActive(false);
             }
-        }
-
-        private IEnumerator PlayAnimation()
-        {
-            yield return PlayLettersAnimation();
-            yield return PlayBackgroundAnimation();
         }
 
         private IEnumerator PlayLettersAnimation()
@@ -59,11 +53,12 @@ namespace Client
 
         private IEnumerator PlayBackgroundAnimation()
         {
+            yield return new WaitForSeconds(1f);
+
             Color color = initialColor;
             color.a = 0f;
-            background.DOColor(color, 1f);
 
-            yield return new WaitForSeconds(1f);
+            yield return background.DOColor(color, .5f).WaitForCompletion();
             onComplete?.Invoke();
         }
     }

@@ -17,7 +17,7 @@ namespace Client
             dificultySlider.onValueChanged.AddListener(OnDifficultyChanged);
             confirmButton.Button.onClick.AddListener(OnConfirmOptions);
 
-            confirmButton.Display(.5f);
+            confirmButton.Display(.5f, true);
         }
 
         private void OnConfirmOptions()

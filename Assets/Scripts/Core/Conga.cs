@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Collections;
 
 namespace Core
 {
@@ -10,24 +11,25 @@ namespace Core
         public Vector2Int Direction { get; }
         public IParticipant First { get; }
         public List<IParticipant> Participants { get; }
-        Action<IParticipant, IParticipant> OnCrash { get; set; }
+        Action<Vector2Int, IParticipant> OnCrash { get; set; }
 
         void Setup(IParticipant participant);
         void AddParticipant(IParticipant participant);
         void StepOn(IBoard board, IRythm rythm);
         void Update(IBoard board, Vector2Int directionSetup);
+        IEnumerator Crash(IBoard board, IRythm rythm);
     }
     public class Conga : IConga
     {
         private List<IParticipant> participants = new List<IParticipant>();
         private Vector2Int direction;
         private Vector2Int lockDirection;
-        private Action<IParticipant, IParticipant> crash;
+        private Action<Vector2Int, IParticipant> crash;
 
         public IParticipant First => participants?.ToArray()[0];
         public List<IParticipant> Participants => participants?.ToList();
         public Vector2Int Direction => direction;
-        public Action<IParticipant, IParticipant> OnCrash { get => crash; set => crash = value; }
+        public Action<Vector2Int, IParticipant> OnCrash { get => crash; set => crash = value; }
 
         public void Setup(IParticipant participant)
         {
@@ -55,14 +57,6 @@ namespace Core
                 return;
 
             Vector2Int previousLocation = First.Location;
-            
-            if (CheckCrash(previousLocation + direction, out IParticipant crashParticipant))
-            {
-                crash?.Invoke(First, crashParticipant);
-
-                First.Move(board, rythm, direction, true);
-                return;
-            }
 
             First.Move(board, rythm, direction);
 
@@ -73,12 +67,35 @@ namespace Core
                 participants[i].Move(board, rythm, followDirection);
             }
 
+            if (CheckCrash(out IParticipant crashParticipant))
+            {
+                crash?.Invoke(direction, crashParticipant);
+                return;
+            }
+
             lockDirection = -direction;
         }
 
-        private bool CheckCrash(Vector2Int location, out IParticipant participant)
+        public IEnumerator Crash(IBoard board, IRythm rythm)
         {
-            participant = participants.Find(x => x != First && x.Location == location);
+            Vector2Int previousLocation = First.Location;
+            First.Crash(board, rythm, direction);
+
+            yield return null;
+
+            for (int i = 1; i < participants.Count; i++)
+            {
+                Vector2Int d =  previousLocation - participants[i].Location;
+                previousLocation = participants[i].Location;
+                participants[i].Crash(board, rythm, d);
+
+                yield return new WaitForSeconds(.5f / participants.Count);
+            }
+        }
+
+        public bool CheckCrash(out IParticipant participant)
+        {
+            participant = participants.Find(x => x != First && x.Location == First.Location);
             return participant != null;
         }
     }

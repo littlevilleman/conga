@@ -25,11 +25,6 @@ namespace Client
             EventBus.Register<EventChangeDifficulty>(ChangeDifficulty);
         }
 
-        private void ChangeDifficulty(EventChangeDifficulty context)
-        {
-
-        }
-
         private void Update()
         {
             if (match == null)
@@ -40,7 +35,8 @@ namespace Client
 
         private void StartGame(EventStartGame context)
         {
-            UIManager.Instance.DisplayView<MatchView>(true, true);
+            UIManager.Instance.DisplayViewTransition();
+            UIManager.Instance.DisplayView<MatchView>();
 
             match = new Match(configManager.Participants, configManager.Rythm);
             match.OnAddParticipant += AddParticipant;
@@ -51,6 +47,10 @@ namespace Client
             audioManager.PlaySound(ESoundCode.MATCH_START);
 
             StartCoroutine(match.Launch());
+        }
+
+        private void ChangeDifficulty(EventChangeDifficulty context)
+        {
 
         }
 
@@ -62,11 +62,11 @@ namespace Client
         private void AddParticipant(IParticipant newParticipant, bool isAwaiting = true)
         {
             ParticipantBehaviour participant = pool.PullElement();
-            participant.Setup(newParticipant, pool, isAwaiting);
+            participant.Setup(newParticipant, isAwaiting);
             participants.Add(participant);
 
             if (isAwaiting)
-                audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA);
+                audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA, UnityEngine.Random.Range(1f, 2f));
         }
 
         private void OnDefeat()
@@ -79,12 +79,10 @@ namespace Client
             audioManager.PlaySound(ESoundCode.MATCH_DEFEAT);
 
             yield return match.Close();
-
             match = null;
 
-            yield return new WaitForSeconds(1f);
-
-            UIManager.Instance.DisplayView<DefeatView>(true, false, true);
+            yield return UIManager.Instance.DisplayViewTransitionAsync(true);
+            UIManager.Instance.DisplayView<DefeatView>(participants);
         }
 
         private void RestartGame(EventRestartGame context)

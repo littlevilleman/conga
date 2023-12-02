@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -44,23 +46,23 @@ namespace Client
             return null;
         }
 
-        public void DisplayView<T>(bool displayTransition = false, bool reverse = true, bool waitForAnimation = false) where T : IView
+        public IEnumerator DisplayViewTransitionAsync(bool reverse = false)
+        {
+            transitionEffect.gameObject.SetActive(true);
+            yield return transitionEffect.Launch(reverse);
+            transitionEffect.gameObject.SetActive(false);
+        }
+
+        public void DisplayViewTransition(bool reverse = false)
+        {
+            StartCoroutine(DisplayViewTransitionAsync(reverse));
+        }
+
+        public void DisplayView<T>(params object [] parameters) where T : IView
         {
             currentView?.Hide();
             currentView = GetView<T>();
-
-            if (displayTransition)
-            {
-                if (waitForAnimation)
-                {
-                    transitionEffect.Launch(reverse, () => currentView?.Display());
-                    return;
-                }
-
-                transitionEffect.Launch(reverse);
-            }
-
-            currentView?.Display();
+            currentView?.Display(parameters);
         }
 
 

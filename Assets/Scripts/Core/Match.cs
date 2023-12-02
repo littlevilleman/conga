@@ -1,4 +1,5 @@
 using Config;
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace Core
 
         private List<ParticipantConfig> config;
         private List<ParticipantConfig> inUseConfig = new ();
+        private float timeScale = 1f;
 
         public IRythm Rythm => rythm;
         public Action OnStart { get => start; set => start = value; }
@@ -52,7 +54,7 @@ namespace Core
             rythm.OnStep += StepOn;
         }
 
-        private void OnCrashConga(IParticipant first, IParticipant participant)
+        private void OnCrashConga(Vector2Int direction, IParticipant participant)
         {
             defeat?.Invoke();
         }
@@ -61,6 +63,7 @@ namespace Core
         {
             //wait for view transition
             OnAddParticipant?.Invoke(conga.First, false);
+
             yield return new WaitForSeconds(1f);
 
             OnAddParticipant?.Invoke(awaitingParticipant, true);
@@ -72,12 +75,22 @@ namespace Core
 
         public IEnumerator Close()
         {
+            timeScale = 0f;
+            //StopTime();
+
             yield return rythm.WaitEndOfStep();
+
+            yield return conga.Crash(board, rythm);
+        }
+
+        private void StopTime()
+        {
+            DOTween.To(() => timeScale, x => timeScale = x, 0f, 1f).WaitForCompletion();
         }
 
         public void Update(float time, Vector2Int directionInput)
         {
-            rythm.Update(time, conga.Participants.Count);
+            rythm.Update(time * timeScale, conga.Participants.Count);
 
             if (directionInput != Vector2Int.zero)
                 conga.Update(board, directionInput);

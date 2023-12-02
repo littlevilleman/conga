@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2592758996710145096}
   - component: {fileID: 2592758996710145099}
   - component: {fileID: 2592758996710145097}
+  - component: {fileID: 981338659697160419}
   m_Layer: 8
   m_Name: Participant
   m_TagString: Untagged
@@ -100,7 +101,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 2592758996710145099}
-  teleportEffect: {fileID: 7207461945064947567}
+  shadow: {fileID: 3455145072135583996}
+  vfx: {fileID: 981338659697160419}
+--- !u!114 &981338659697160419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2592758996710145102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2a9428dc78c51a4695bfe9f6a2a72ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dummy: {fileID: 1011843323201757406}
 --- !u!1 &4591688316145791562
 GameObject:
   m_ObjectHideFlags: 0

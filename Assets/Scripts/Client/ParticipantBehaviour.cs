@@ -1,122 +1,107 @@
 using Core;
 using DG.Tweening;
-using System;
 using UnityEngine;
-using static UnityEditor.FilePathAttribute;
 
 namespace Client
 {
     public class ParticipantBehaviour : MonoBehaviour, IPoolable<ParticipantBehaviour>
     {
         [SerializeField] private SpriteRenderer spriteRenderer;
-        [SerializeField] private TeleportEffect teleportEffect;
-        private Material material;
+        [SerializeField] private SpriteRenderer shadow;
+        [SerializeField] private ParticipantVfx vfx;
 
         private IParticipant participant;
         private FrameAnimator animator;
 
         private const float LOCATION_WIDTH = .12f;
-
         private Vector3 Position => GetPosition(participant.Location);
 
-
-        public void Setup(IParticipant participantSetup, IPool<ParticipantBehaviour> poolSetup, bool isAwaiting = true)
+        public void Setup(IParticipant participantSetup, bool spawnAwaiting = true)
         {
             participant = participantSetup;
             participant.OnJoinConga += Join;
             participant.OnMove += Move;
+            participant.OnCrash += Crash;
             animator = new FrameAnimator(participant.Config.Sprites.Length);
 
-            transform.position = Position;
             spriteRenderer.sortingOrder = 10 - participant.Location.y;
+            spriteRenderer.maskInteraction = SpriteMaskInteraction.None;
+            spriteRenderer.material.SetFloat("_IsAwaiting", spawnAwaiting ? 1f : 0f);
 
-            PlaySpawnEffect(isAwaiting);
+            transform.localScale = Vector3.one;
+            transform.position = Position;
+
+            if (spawnAwaiting)
+                vfx.PlaySpawnEffect();
         }
 
-        private void PlaySpawnEffect(bool isAwaiting)
+        private void Join()
         {
-
-            if (isAwaiting)
-            {
-                spriteRenderer.transform.localScale = Vector3.zero;
-                spriteRenderer.material.SetFloat("_IsAwaiting", 1f);
-                spriteRenderer.material.DOFloat(1f, "_IsAwaiting", .25f);
-                spriteRenderer.transform.DOScale(Vector3.one, .25f);
-                //spriteRenderer.transform.DOScale(Vector3.one, .25f);
-            }
-            else
-            {
-                spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
-            }
+            vfx.PlayJoinEffect();
         }
 
         private void Update()
         {
             animator?.Update(Time.deltaTime);
             spriteRenderer.sprite = participant.Config.Sprites[animator.CurrentFrame];
-            teleportEffect.UpdateFrame(spriteRenderer.sprite);
         }
 
-        private void Join()
-        {
-            Color fromColor = spriteRenderer.material.GetColor("_ColorD");
-            Color toColor = spriteRenderer.material.GetColor("_ColorA");
-            Color toColorb = spriteRenderer.material.GetColor("_ColorC");
-
-            spriteRenderer.transform.localScale = Vector3.one;
-            spriteRenderer.transform.DOScale(Vector3.one * 1.25f, .1f).SetLoops(2, LoopType.Yoyo);
-            spriteRenderer.material.DOColor(toColorb, "_BorderColor",.25f).SetLoops(2, LoopType.Yoyo);
-            spriteRenderer.material.DOColor(toColor,"_AwaitingColor",.25f).OnStepComplete(OnStepComplete).SetLoops(2, LoopType.Yoyo);
-
-            void OnStepComplete()
-            {
-                spriteRenderer.material.DOFloat(0f, "_IsAwaiting", .35f);
-            }
-        }
-
-        private void Move(Vector2Int location, Vector2Int direction, float time, bool crash = false)
+        private void Move(Vector2Int location, Vector2Int direction, float time)
         {
             spriteRenderer.flipX = direction.x == 0 ? spriteRenderer.flipX : direction.x > 0f;
-            transform.DOMove(GetPosition(location), time).OnComplete(OnMoveComplete);
+            spriteRenderer.sortingOrder = 10 - participant.Location.y;
+
+            transform.DOMove(GetPosition(location), time).OnComplete(() => OnMoveComplete(direction, time));
 
             if (location != participant.Location)
             {
                 var fromPosition = GetPosition(participant.Location - direction);
-                teleportEffect.Play(fromPosition, spriteRenderer.flipX);
-            }
-
-            spriteRenderer.sortingOrder = 10 - participant.Location.y;
-
-            void OnMoveComplete()
-            {
-                teleportEffect.Stop();
-                transform.position = Position;
-
-                if (crash)
-                    Crash(direction, time * 2f);
+                vfx.PlayTeleportEffect(fromPosition, spriteRenderer.flipX);
             }
         }
 
-        private void Crash(Vector2Int direction, float time)
+        private void Crash(Vector2Int location, Vector2Int direction, float time)
         {
-            Color toColor = spriteRenderer.material.GetColor("_ColorA");
+            vfx.PlayCrashEffect(GetPosition(participant.Location - direction), time * 1.25f, OnCrashEffectComplete);
+        }
 
-            spriteRenderer.sortingOrder += 10;
-            spriteRenderer.material.SetFloat("_IsAwaiting", 1f);
-            spriteRenderer.transform.DOScale(Vector3.one * 1.25f, time).SetLoops(2, LoopType.Yoyo);
-            spriteRenderer.material.DOColor(toColor, "_AwaitingColor", time).OnComplete(OnStepComplete).SetLoops(2, LoopType.Yoyo);
-            transform.DOMove(GetPosition(participant.Location - direction), time);
+        private void OnMoveComplete(Vector2Int direction, float time)
+        {
+            vfx.StopTeleportEffect();
+            transform.position = Position;
+        }
 
-             void OnStepComplete()
-            {
-                spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
-                spriteRenderer.sortingOrder -= 10 - participant.Location.y;
-            }
+        private void OnCrashEffectComplete()
+        {
+            spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
+            spriteRenderer.sortingOrder -= 10 - participant.Location.y;
+            vfx.PlaySpawnEffect(true);
         }
 
         private Vector3 GetPosition(Vector2Int location)
         {
             return (new Vector3(location.x, location.y, 0f) - new Vector3(4f, 4.5f, 0f)) * LOCATION_WIDTH;
+        }
+
+        public void MoveResult(Transform resultBoard)
+        {
+            Transform board = transform.parent;
+            spriteRenderer.flipX = false;
+            spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
+            spriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+            spriteRenderer.transform.SetParent(resultBoard);
+            spriteRenderer.transform.localScale= Vector3.one;
+            shadow.gameObject.SetActive(false);
+
+            transform.position = GetPosition(new Vector2Int(10, 4));
+            transform.DOMove(GetPosition(new Vector2Int(-1, 4)), 2f).SetEase(Ease.Linear).OnComplete(OnComplete);
+
+            void OnComplete()
+            {
+                shadow.gameObject.SetActive(true);
+                spriteRenderer.transform.localScale = Vector3.zero;
+                spriteRenderer.transform.SetParent(board);
+            }
         }
 
         public void Recycle(IPool<ParticipantBehaviour> pool)

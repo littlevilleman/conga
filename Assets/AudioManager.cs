@@ -2,7 +2,6 @@ using Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using UnityEngine;
 
 namespace Client
@@ -72,11 +71,10 @@ namespace Client
 
         private void OnStep()
         {
-            //musicSource.pitch = Mathf.Clamp(2 * (1 - rythm.Cadence), 1f, 2f);
-            //Debug.Log();
+            musicSource.pitch = Mathf.Clamp(1 + .4f / (rythm.Cadence) * .15f, 1f, 2f);
         }
 
-        public void PlaySound(ESoundCode code)
+        public void PlaySound(ESoundCode code, float pitch = 1f)
         {
             Sound sound = sounds.Find(x => x.code == code);
 
@@ -85,6 +83,7 @@ namespace Client
 
             AudioSource source = PullAudioSource();
             source.clip = sound.clip;
+            source.pitch = pitch;
             source.Play();
         }
 

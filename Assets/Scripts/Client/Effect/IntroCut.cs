@@ -53,7 +53,7 @@ namespace Client
 
         private IEnumerator PlayBackgroundAnimation()
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1.5f);
 
             Color color = initialColor;
             color.a = 0f;

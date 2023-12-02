@@ -4,7 +4,7 @@ namespace Client
 {
     public class TeleportEffect : MonoBehaviour
     {
-        [SerializeField] public SpriteRenderer spriteRenderer;
+        [SerializeField] private SpriteRenderer spriteRenderer;
 
         public void Play(Vector3 fromPosition, bool flipX)
         {
@@ -20,7 +20,7 @@ namespace Client
 
         public void Stop()
         {
-            gameObject.gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
     }
 }

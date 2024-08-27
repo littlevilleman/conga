@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 using UnityEngine;
 using System;
 
-namespace Core
+namespace Core.Conga
 {
     public interface IBoard
     {

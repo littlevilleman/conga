@@ -18,3 +18,8 @@ MonoBehaviour:
   - {fileID: 720606473, guid: f36b8fc726ee6dd4db3dbd72b0ba35f1, type: 3}
   - {fileID: -189447776, guid: f36b8fc726ee6dd4db3dbd72b0ba35f1, type: 3}
   - {fileID: -1913829650, guid: f36b8fc726ee6dd4db3dbd72b0ba35f1, type: 3}
+  colors:
+  - {r: 0.9529412, g: 0.9529412, b: 0.9529412, a: 1}
+  - {r: 0.99215686, g: 0.5671851, b: 0.32156858, a: 1}
+  - {r: 0.8301887, g: 0.28508362, b: 0.31915268, a: 1}
+  - {r: 0.8018868, g: 0.5497632, b: 0.38883945, a: 1}

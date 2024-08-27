@@ -14,10 +14,21 @@ namespace Client
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
-
         private void Update()
         {
             dummy.sprite = spriteRenderer.sprite;
+        }
+
+        public void PlayTeleportEffect(Vector3 fromPosition, bool flipX)
+        {
+            dummy.flipX = flipX;
+            dummy.transform.position = fromPosition;
+            dummy.gameObject.SetActive(true);
+        }
+
+        public void StopTeleportEffect()
+        {
+            dummy.gameObject.SetActive(false);
         }
 
         public void PlayJoinEffect()
@@ -55,18 +66,6 @@ namespace Client
 
             spriteRenderer.material.DOFloat(reverse ? 0f : 1f, "_IsAwaiting", .25f);
             spriteRenderer.transform.DOScale(reverse ? Vector3.zero : Vector3.one, .25f);
-        }
-
-        public void PlayTeleportEffect(Vector3 fromPosition, bool flipX)
-        {
-            dummy.flipX = flipX;
-            dummy.transform.position = fromPosition;
-            dummy.gameObject.SetActive(true);
-        }
-
-        public void StopTeleportEffect()
-        {
-            dummy.gameObject.SetActive(false);
         }
     }
 

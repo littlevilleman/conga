@@ -71,7 +71,7 @@ namespace Client
 
         private void OnStep()
         {
-            musicSource.pitch = Mathf.Clamp(1 + .4f / (rythm.Cadence) * .15f, 1f, 2f);
+            //musicSource.pitch = Mathf.Clamp(1 + .4f / (rythm.Cadence) * .15f, 1f, 2f);
         }
 
         public void PlaySound(ESoundCode code, float pitch = 1f)

@@ -2,7 +2,7 @@ using Config;
 using System;
 using UnityEngine;
 
-namespace Core
+namespace Core.Conga
 {
     public interface IParticipantFactory
     {

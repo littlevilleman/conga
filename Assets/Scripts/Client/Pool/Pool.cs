@@ -43,6 +43,7 @@ namespace Client
         public void Recycle(T element)
         {
             element.gameObject.SetActive(false);
+            element.transform.SetParent(transform);
             element.transform.position = Vector3.zero;
         }
     }

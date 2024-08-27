@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a594f14046108fe4485d6751dd16e225, type: 3}
+  m_Name: Donkey
+  m_EditorClassIdentifier: 
+  name: Donkey
+  sprites:
+  - {fileID: -560272319, guid: ef6724c031a69634c9c5988c58a08f25, type: 3}
+  - {fileID: 1775261665, guid: ef6724c031a69634c9c5988c58a08f25, type: 3}
+  - {fileID: 809326314, guid: ef6724c031a69634c9c5988c58a08f25, type: 3}
+  - {fileID: -1132910809, guid: ef6724c031a69634c9c5988c58a08f25, type: 3}

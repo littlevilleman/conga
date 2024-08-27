@@ -1,5 +1,7 @@
-using Core;
+using Config;
+using Core.Conga;
 using DG.Tweening;
+using System.Linq;
 using UnityEngine;
 
 namespace Client
@@ -9,12 +11,23 @@ namespace Client
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private SpriteRenderer shadow;
         [SerializeField] private ParticipantVfx vfx;
+        [SerializeField] private ParticipantConfig config;
 
         private IParticipant participant;
         private FrameAnimator animator;
 
         private const float LOCATION_WIDTH = .12f;
         private Vector3 Position => GetPosition(participant.Location);
+
+        private void Awake()
+        {
+            if (config == null)
+                return;
+            
+            participant = config.Build(new Vector2Int (4 + Mathf.CeilToInt(transform.position.x / .16f), 4 + Mathf.CeilToInt((transform.position.y / .16f) - .06f)));
+            Setup(participant, false);
+        }
+
 
         public void Setup(IParticipant participantSetup, bool spawnAwaiting = true)
         {
@@ -28,11 +41,22 @@ namespace Client
             spriteRenderer.maskInteraction = SpriteMaskInteraction.None;
             spriteRenderer.material.SetFloat("_IsAwaiting", spawnAwaiting ? 1f : 0f);
 
+            if (participant.Config.Colors.Length > 0)
+            {
+                spriteRenderer.material.SetColor("_ColorA", participant.Config.Colors[0]);
+                spriteRenderer.material.SetColor("_ColorB", participant.Config.Colors[1]);
+                spriteRenderer.material.SetColor("_ColorC", participant.Config.Colors[2]);
+                spriteRenderer.material.SetColor("_ColorD", participant.Config.Colors[3]);
+            }
+
             transform.localScale = Vector3.one;
+            shadow.transform.localScale = Vector3.one;
             transform.position = Position;
 
             if (spawnAwaiting)
                 vfx.PlaySpawnEffect();
+
+            vfx.StopTeleportEffect();
         }
 
         private void Join()
@@ -51,7 +75,7 @@ namespace Client
             spriteRenderer.flipX = direction.x == 0 ? spriteRenderer.flipX : direction.x > 0f;
             spriteRenderer.sortingOrder = 10 - participant.Location.y;
 
-            transform.DOMove(GetPosition(location), time).OnComplete(() => OnMoveComplete(direction, time));
+            transform.DOMove(GetPosition(location), time).OnComplete(OnMoveComplete);
 
             if (location != participant.Location)
             {
@@ -65,7 +89,7 @@ namespace Client
             vfx.PlayCrashEffect(GetPosition(participant.Location - direction), time * 1.25f, OnCrashEffectComplete);
         }
 
-        private void OnMoveComplete(Vector2Int direction, float time)
+        private void OnMoveComplete()
         {
             vfx.StopTeleportEffect();
             transform.position = Position;
@@ -91,14 +115,13 @@ namespace Client
             spriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
             spriteRenderer.transform.SetParent(resultBoard);
             spriteRenderer.transform.localScale= Vector3.one;
-            shadow.gameObject.SetActive(false);
+            shadow.transform.localScale = Vector3.zero;
 
             transform.position = GetPosition(new Vector2Int(10, 4));
             transform.DOMove(GetPosition(new Vector2Int(-1, 4)), 2f).SetEase(Ease.Linear).OnComplete(OnComplete);
 
             void OnComplete()
             {
-                shadow.gameObject.SetActive(true);
                 spriteRenderer.transform.localScale = Vector3.zero;
                 spriteRenderer.transform.SetParent(board);
             }
@@ -106,6 +129,7 @@ namespace Client
 
         public void Recycle(IPool<ParticipantBehaviour> pool)
         {
+            StopAllCoroutines();
             pool.Recycle(this);
         }
     }

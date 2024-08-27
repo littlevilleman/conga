@@ -4,7 +4,7 @@ using System.Linq;
 using System;
 using System.Collections;
 
-namespace Core
+namespace Core.Conga
 {
     public interface IConga
     {

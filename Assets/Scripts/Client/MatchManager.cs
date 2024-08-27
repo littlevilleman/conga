@@ -1,13 +1,16 @@
-using Client;
-using Config;
+using Core.Conga;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Core
+namespace Client
 {
+
     public class MatchManager : MonoBehaviour
     {
-        [SerializeField] private List<ParticipantConfig> config;
+        [SerializeField] private ConfigManager configManager;
+        [SerializeField] private InputManager inputManager;
+        [SerializeField] private AudioManager audioManager;
         [SerializeField] private ParticipantPool pool;
 
         private IMatch match;
@@ -19,32 +22,7 @@ namespace Core
             EventBus.Register<EventExitGame>(ExitGame);
             EventBus.Register<EventRestartGame>(RestartGame);
             EventBus.Register<EventBackToMenu>(BackToMenu);
-        }
-
-        private void StartGame(EventStartGame context)
-        {
-            UIManager.Instance.HideAllViews();
-
-            match = new Match(config);
-            match.OnJoinParticipant += AddParticipant;
-            match.OnDefeat += Defeat;
-
-            StartCoroutine(match.Launch());
-        }
-
-        private void AddParticipant(IParticipant newParticipant)
-        {
-            ParticipantBehaviour participant = pool.PullElement();
-            participant.Setup(newParticipant, pool);
-            participants.Add(participant);
-        }
-
-        private void RecycleParticipants()
-        {
-            foreach (ParticipantBehaviour participant in participants)
-                participant.Recycle(pool);
-
-            participants.Clear();
+            EventBus.Register<EventChangeDifficulty>(ChangeDifficulty);
         }
 
         private void Update()
@@ -52,13 +30,59 @@ namespace Core
             if (match == null)
                 return;
 
-            match.Update(Time.deltaTime, GetDirectionInput());
+            match.Update(Time.deltaTime, inputManager.GetDirectionInput());
         }
 
-        private void Defeat()
+        private void StartGame(EventStartGame context)
         {
+            UIManager.Instance.DisplayViewTransition();
+            UIManager.Instance.DisplayView<MatchView>();
+
+            match = new Match(configManager.Participants, configManager.Rythm);
+            match.OnAddParticipant += AddParticipant;
+            match.OnStart += OnStartGame;
+            match.OnDefeat += OnDefeat;
+
+            audioManager.Setup(match.Rythm);
+            audioManager.PlaySound(ESoundCode.MATCH_START);
+
+            StartCoroutine(match.Launch());
+        }
+
+        private void ChangeDifficulty(EventChangeDifficulty context)
+        {
+
+        }
+
+        private void OnStartGame()
+        {
+
+        }
+
+        private void AddParticipant(IParticipant newParticipant, bool isAwaiting = true)
+        {
+            ParticipantBehaviour participant = pool.PullElement();
+            participant.Setup(newParticipant, isAwaiting);
+            participants.Add(participant);
+
+            if (isAwaiting)
+                audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA, UnityEngine.Random.Range(1f, 2f));
+        }
+
+        private void OnDefeat()
+        {
+            StartCoroutine(CloseGame());
+        }
+
+        private IEnumerator CloseGame()
+        {
+            audioManager.PlaySound(ESoundCode.MATCH_DEFEAT);
+
+            yield return match.Close();
             match = null;
-            UIManager.Instance.DisplayView<DefeatView>();
+
+            yield return UIManager.Instance.DisplayViewTransitionAsync(true);
+            UIManager.Instance.DisplayView<DefeatView>(participants);
         }
 
         private void RestartGame(EventRestartGame context)
@@ -78,21 +102,12 @@ namespace Core
             Application.Quit();
         }
 
-        private Vector2Int GetDirectionInput()
+        private void RecycleParticipants()
         {
-            if (Input.GetKey(KeyCode.W))
-                return Vector2Int.up;
+            foreach (ParticipantBehaviour participant in participants)
+                participant.Recycle(pool);
 
-            if (Input.GetKey(KeyCode.D))
-                return Vector2Int.right;
-
-            if (Input.GetKey(KeyCode.A))
-                return Vector2Int.left;
-
-            if (Input.GetKey(KeyCode.S))
-                return Vector2Int.down;
-
-            return Vector2Int.zero;
+            participants.Clear();
         }
 
         void OnDisable()

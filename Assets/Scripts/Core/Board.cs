@@ -2,27 +2,36 @@ using System.Collections.Generic;
 using System.Linq;
 using Vector2Int = UnityEngine.Vector2Int;
 using Random = UnityEngine.Random;
+using UnityEngine;
+using System;
 
-namespace Core
+namespace Core.Conga
 {
     public interface IBoard
     {
+        Vector2Int Size { get; }
+        Vector2Int CenterLocation { get; }
         Vector2Int GetEmptyLocation(List<IParticipant> participants);
-        Vector2Int OverrideLocation(Vector2Int lcoation);
+        Vector2Int GetBoardLocation(Vector2Int location);
+        Vector2Int GetBoardDirection(Vector2Int direction);
     }
 
     public class Board : IBoard
     {
         public Vector2Int size;
 
+        private const int BOARD_SIZE = 9;
         public int LocationsCount => size.x * size.y;
 
-        public Board(int sizeSetup)
+        public Vector2Int Size => size;
+        public Vector2Int CenterLocation => new Vector2Int(Mathf.FloorToInt(size.x / 2f), Mathf.FloorToInt(size.y / 2f));
+
+        public Board()
         {
-            size = new Vector2Int(sizeSetup, sizeSetup);
+            size = new Vector2Int(BOARD_SIZE, BOARD_SIZE);
         }
 
-        public Vector2Int OverrideLocation(Vector2Int location)
+        public Vector2Int GetBoardLocation(Vector2Int location)
         {
             if (location.x < 0)
                 return location + Vector2Int.right * size.x;
@@ -57,6 +66,17 @@ namespace Core
 
             int random = Random.Range(0, emptyLocations.Count);
             return emptyLocations[random];
+        }
+
+        public Vector2Int GetBoardDirection(Vector2Int direction)
+        {
+            if (Mathf.Abs(direction.x) > 1)
+                direction.x -= Math.Sign(direction.x) * size.x;
+
+            else if (Mathf.Abs(direction.y) > 1)
+                direction.y -= Math.Sign(direction.y) * size.x;
+
+            return direction;
         }
     }
 }

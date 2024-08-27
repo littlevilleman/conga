@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +9,36 @@ namespace Client
         [SerializeField] private List<MenuButton> buttons;
 
         private int selected;
+
+        public void Display(float optionAnimationTime= 1f)
+        {
+            gameObject.SetActive(true);
+
+            StartCoroutine(DisplayAnimation(optionAnimationTime));
+        }
+
+        public void Hide()
+        {
+            StopAllCoroutines();
+
+            foreach (var option in buttons)
+            {
+                option.Hide();
+            }
+
+            gameObject.SetActive(false);
+        }
+
+        private IEnumerator DisplayAnimation(float animationTime)
+        {
+            foreach (MenuButton option in buttons)
+            {
+                option.Display(.5f, GetButton(selected) == option);
+
+                yield return new WaitForSeconds(.25f);
+            }
+        }
+
 
         private void OnEnable()
         {
@@ -26,7 +57,7 @@ namespace Client
                 GetButton(selected).Button.onClick?.Invoke();
         }
 
-        public void SelectOption(int toOption)
+        private void SelectOption(int toOption)
         {
             toOption = ClampSelection(toOption);
             GetButton(selected)?.Select(false);

@@ -4,17 +4,17 @@ namespace Client
 {
     public interface IView
     {
-        void Display();
+        void Display(params object[] parameters);
         void Hide();
     }
 
     public abstract class View : MonoBehaviour, IView
     {
-        public void Display()
+        public virtual void Display(params object[] parameters)
         {
             gameObject.SetActive(true);
         }
-        public void Hide()
+        public virtual void Hide()
         {
             gameObject.SetActive(false);
         }

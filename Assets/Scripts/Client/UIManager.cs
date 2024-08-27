@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +12,7 @@ namespace Client
 
         [SerializeField] private List<View> views;
         [SerializeField] private Canvas viewLayer;
+        [SerializeField] private ViewTransitionEffect transitionEffect;
 
         private IView currentView;
 
@@ -43,18 +46,31 @@ namespace Client
             return null;
         }
 
-        public void DisplayView<T>() where T : IView
+        public IEnumerator DisplayViewTransitionAsync(bool reverse = false)
+        {
+            transitionEffect.gameObject.SetActive(true);
+            yield return transitionEffect.Launch(reverse);
+            transitionEffect.gameObject.SetActive(false);
+        }
+
+        public void DisplayViewTransition(bool reverse = false)
+        {
+            StartCoroutine(DisplayViewTransitionAsync(reverse));
+        }
+
+        public void DisplayView<T>(params object [] parameters) where T : IView
         {
             currentView?.Hide();
             currentView = GetView<T>();
-            currentView?.Display();
+            currentView?.Display(parameters);
         }
+
 
         public void HideAllViews()
         {
             foreach (View view in views)
             {
-                view.Hide();
+                view.gameObject.SetActive(false);
             }
         }
     }

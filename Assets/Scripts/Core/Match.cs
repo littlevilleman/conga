@@ -1,18 +1,22 @@
 using Config;
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Core
+namespace Core.Conga
 {
     public interface IMatch
     {
-        Action<IParticipant> OnJoinParticipant { get; set; }
+        Action OnStart { get; set; }
+        Action<IParticipant, bool> OnAddParticipant { get; set; }
         Action OnDefeat { get; set; }
+        IRythm Rythm { get;}
+
         IEnumerator Launch();
+        IEnumerator Close();
         void Update(float time, Vector2Int directionInput);
     }
 
@@ -21,85 +25,102 @@ namespace Core
         private IBoard board;
         private IRythm rythm;
         private IConga conga;
-        private IParticipant awaitingParticipant;
 
-        private List<ParticipantConfig> config;
-        private Action<IParticipant> joinParticipant;
+        private IParticipant awaitingParticipant;
+        private Action start;
+        private Action<IParticipant, bool> addParticipant;
         private Action defeat;
 
-        private const int BOARD_SIZE = 9;
-        public Action<IParticipant> OnJoinParticipant { get => joinParticipant; set => joinParticipant = value; }
+        private List<ParticipantConfig> config;
+        private List<ParticipantConfig> inUseConfig = new ();
+        private float timeScale = 1f;
+
+        public IRythm Rythm => rythm;
+        public Action OnStart { get => start; set => start = value; }
+        public Action<IParticipant, bool> OnAddParticipant { get => addParticipant; set => addParticipant = value; }
         public Action OnDefeat { get => defeat; set => defeat = value; }
 
-        public Match(List<ParticipantConfig> participants)
+        public Match(List<ParticipantConfig> participantsConfig, RythmConfig rythmConfig)
         {
-            config = participants;
-            board = new Board(BOARD_SIZE);
+            config = new List<ParticipantConfig>(participantsConfig);
+            rythm = rythmConfig.Build();
+            board = new Board();
             conga = new Conga();
-            rythm = new Rythm();
 
-            conga.Setup(GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants)));
+            conga.Setup(GetRandomFactory().Build(board.CenterLocation));
             awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
+
+            conga.OnCrash += OnCrashConga;
             rythm.OnStep += StepOn;
+        }
+
+        private void OnCrashConga(Vector2Int direction, IParticipant participant)
+        {
+            defeat?.Invoke();
         }
 
         public IEnumerator Launch()
         {
-            yield return null;
+            //wait for view transition
+            OnAddParticipant?.Invoke(conga.First, false);
 
-            joinParticipant?.Invoke(conga.First);
-            joinParticipant?.Invoke(awaitingParticipant);
+            yield return new WaitForSeconds(1f);
+
+            OnAddParticipant?.Invoke(awaitingParticipant, true);
+
+            yield return new WaitForSeconds(1f);
+
+            start?.Invoke();
+        }
+
+        public IEnumerator Close()
+        {
+            timeScale = 0f;
+            //StopTime();
+
+            yield return rythm.WaitEndOfStep();
+
+            yield return conga.Crash(board, rythm);
+        }
+
+        private void StopTime()
+        {
+            DOTween.To(() => timeScale, x => timeScale = x, 0f, 1f).WaitForCompletion();
         }
 
         public void Update(float time, Vector2Int directionInput)
         {
-            rythm.Update(time);
+            rythm.Update(time * timeScale, conga.Participants.Count);
 
             if (directionInput != Vector2Int.zero)
                 conga.Update(board, directionInput);
         }
-
         private void StepOn()
         {
-            Vector2Int location = board.OverrideLocation(conga.First.Location + conga.Direction);
-
-            if (CheckDefeat(location))
+            if (board.GetBoardLocation(conga.First.Location + conga.Direction) == awaitingParticipant.Location)
             {
-                defeat?.Invoke();
-                return;
-            }
-            
-            if (CheckJoin(location))
-            {
-                joinParticipant?.Invoke(awaitingParticipant);
+                conga.AddParticipant(awaitingParticipant);
+                awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
+                addParticipant?.Invoke(awaitingParticipant, true);
                 return;
             }
 
-            conga.StepOn(board);
+            conga.StepOn(board, rythm);
         }
 
-        private bool CheckJoin(Vector2Int location)
+        private IParticipantFactory GetRandomFactory()
         {
-            if (location != awaitingParticipant.Location)
-                return false;
-            
-            conga.AddParticipant(awaitingParticipant);
-            awaitingParticipant = GetRandomFactory().Build(board.GetEmptyLocation(conga.Participants));
-            return true;
-        }
+            if (config.Count == 0)
+            {
+                config.AddRange(inUseConfig);
+                inUseConfig.Clear();
+            }
 
-        private bool CheckDefeat(Vector2Int location)
-        {
-            return conga.Participants.Count > 1 && conga.Participants.Any(x => x.Location == location);
-        }
-
-        private IParticipantFactory GetRandomFactory(bool allowClone = true)
-        {
             int index = Random.Range(0, config.Count);
             var factory = config[index];
 
-            if (!allowClone)
-                config.RemoveAt(index);
+            config.RemoveAt(index);
+            inUseConfig.Add(factory);
 
             return factory;
         }

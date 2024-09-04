@@ -1,7 +1,6 @@
 using Config;
 using Core.Conga;
 using DG.Tweening;
-using System.Linq;
 using UnityEngine;
 
 namespace Client
@@ -41,13 +40,13 @@ namespace Client
             spriteRenderer.maskInteraction = SpriteMaskInteraction.None;
             spriteRenderer.material.SetFloat("_IsAwaiting", spawnAwaiting ? 1f : 0f);
 
-            if (participant.Config.Colors.Length > 0)
-            {
-                spriteRenderer.material.SetColor("_ColorA", participant.Config.Colors[0]);
-                spriteRenderer.material.SetColor("_ColorB", participant.Config.Colors[1]);
-                spriteRenderer.material.SetColor("_ColorC", participant.Config.Colors[2]);
-                spriteRenderer.material.SetColor("_ColorD", participant.Config.Colors[3]);
-            }
+            //if (participant.Config.Colors.Length > 0)
+            //{
+            //    spriteRenderer.material.SetColor("_ColorA", participant.Config.Colors[0]);
+            //    spriteRenderer.material.SetColor("_ColorB", participant.Config.Colors[1]);
+            //    spriteRenderer.material.SetColor("_ColorC", participant.Config.Colors[2]);
+            //    spriteRenderer.material.SetColor("_ColorD", participant.Config.Colors[3]);
+            //}
 
             transform.localScale = Vector3.one;
             shadow.transform.localScale = Vector3.one;

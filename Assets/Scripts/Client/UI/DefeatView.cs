@@ -29,9 +29,10 @@ namespace Client
             backButton.Button.onClick.AddListener(OnClickBackButton);
         }
 
-        public override void Display(params object[] parameters)
+        public override async void Display(params object[] parameters)
         {
             participants = parameters[0] as List<ParticipantBehaviour>;
+            pointsText.text = 0.ToString("00");
             base.Display(parameters);
 
             menuSelector.Hide();

@@ -82,6 +82,12 @@ namespace Client
             match = null;
 
             yield return UIManager.Instance.DisplayViewTransitionAsync(true);
+
+            var awaiting = participants[participants.Count - 1];
+            awaiting.Recycle(pool);
+            participants.Remove(awaiting);
+
+
             UIManager.Instance.DisplayView<DefeatView>(participants);
         }
 

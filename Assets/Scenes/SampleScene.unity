@@ -3990,7 +3990,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.49188322, g: 0.7735849, b: 0.5610987, a: 1}
+  m_BackGroundColor: {r: 0.83921576, g: 0.8431373, b: 0.83921576, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -4001,8 +4001,8 @@ Camera:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 1
-    height: 0.9989929
+    width: 0.99808425
+    height: 0.99904126
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -4399,13 +4399,13 @@ MonoBehaviour:
   sounds:
   - code: 5
     clip: {fileID: 8300000, guid: 60387ddaaadcdb5449fe767b69461624, type: 3}
-    mute: 1
+    mute: 0
   - code: 3
     clip: {fileID: 8300000, guid: bee6e868c440b3c47acb697db709623b, type: 3}
-    mute: 1
+    mute: 0
   - code: 4
     clip: {fileID: 8300000, guid: 4e15cf6fe4e974249aa23379e46c917e, type: 3}
-    mute: 1
+    mute: 0
   music:
   - code: 0
     clip: {fileID: 8300000, guid: 9fa04c70b514e8d4c81bdc825ef02c99, type: 3}
@@ -4618,7 +4618,7 @@ AudioSource:
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
-  Mute: 0
+  Mute: 1
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
@@ -10880,7 +10880,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 777244859}
   m_OnClick:
     m_PersistentCalls:
@@ -13750,7 +13750,7 @@ AudioSource:
   m_Volume: 0.1
   m_Pitch: 1
   Loop: 1
-  Mute: 0
+  Mute: 1
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128

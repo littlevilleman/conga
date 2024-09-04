@@ -83,7 +83,7 @@ namespace Client
 
             AudioSource source = PullAudioSource();
             source.clip = sound.clip;
-            source.pitch = pitch;
+            //source.pitch = pitch;
             source.Play();
         }
 

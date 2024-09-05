@@ -11,6 +11,7 @@ namespace Client
     {
         [SerializeField] private List<RectTransform> letters;
         [SerializeField] private Image background;
+        [SerializeField] private Image title;
         private float letterSpawnDelay = .05f;
         private Color initialColor;
 
@@ -28,7 +29,9 @@ namespace Client
 
         public void Play()
         {
-            StartCoroutine(PlayLettersAnimation());
+            //StartCoroutine(PlayLettersAnimation());
+            title.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+            title.GetComponent<RectTransform>().DOAnchorPosY(25f, 1F).SetDelay(1.5f).SetEase(Ease.InOutBack);
             StartCoroutine(PlayBackgroundAnimation());
         }
         public void Stop()

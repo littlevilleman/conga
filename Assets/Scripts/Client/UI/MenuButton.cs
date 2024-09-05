@@ -9,16 +9,16 @@ public class MenuButton : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text text;
     [SerializeField] private Color defaultcolor;
-    [SerializeField] private Color selectedColor;
+    [SerializeField] private Color initialColor;
+    [SerializeField] private Color initialTextColor;
     [SerializeField] private Color defaultTextColor;
-    [SerializeField] private Color selectedTextColor;
 
     public Button Button => button;
 
     public void Select(bool select)
     {
-        button.image.color = select ? selectedColor : defaultcolor;
-        text.color = select ? selectedTextColor : defaultTextColor;
+        //button.image.color = initialColor;
+        //text.color =  initialTextColor;
     }
 
     public void Display(float animationTime, bool select = false)
@@ -29,17 +29,14 @@ public class MenuButton : MonoBehaviour
 
     private IEnumerator DisplayAnimation(float animationTime, bool select)
     {
-        Color buttonColor = select ? selectedColor : defaultcolor;
-        Color textColor = select ? selectedTextColor : defaultTextColor;
+        Color buttonColor = defaultcolor;
+        Color textColor = defaultTextColor;
 
         button.image.color = new Color(0f, 0f, 0f, 0f);
         text.color = new Color(0f, 0f, 0f, 0f);
 
-        text.DOColor(textColor, animationTime * .95f);
-        yield return button.image.DOColor(buttonColor, animationTime).WaitForCompletion();
-        
-        button.image.color = buttonColor;
-        text.color = textColor;
+        yield return text.DOColor(defaultTextColor, animationTime * .95f).WaitForCompletion();
+        //button.image.DOColor(defaultcolor, animationTime);
 
         Select(select);
     }

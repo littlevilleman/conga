@@ -19,8 +19,8 @@ namespace Client
         private void OnEnable()
         {
             startGameButton.Button.onClick.AddListener(OnClickStartGame);
-            optionsButton.Button.onClick.AddListener(OnClickOptions);
-            exitGameButton.Button.onClick.AddListener(OnClickExitGame);
+            //optionsButton.Button.onClick.AddListener(OnClickOptions);
+            //exitGameButton.Button.onClick.AddListener(OnClickExitGame);
 
             intro.onComplete += OnCompleteIntro;
             intro.Play();
@@ -49,8 +49,8 @@ namespace Client
         private void OnDisable()
         {
             startGameButton.Button.onClick.RemoveListener(OnClickStartGame);
-            optionsButton.Button.onClick.RemoveListener(OnClickOptions);
-            exitGameButton.Button.onClick.RemoveListener(OnClickExitGame);
+            //optionsButton.Button.onClick.RemoveListener(OnClickOptions);
+            //exitGameButton.Button.onClick.RemoveListener(OnClickExitGame);
 
             intro.onComplete -= OnCompleteIntro;
             intro.Stop();

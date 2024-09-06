@@ -31,8 +31,8 @@ namespace Client
         {
             //StartCoroutine(PlayLettersAnimation());
             title.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
-            title.GetComponent<RectTransform>().DOAnchorPosY(25f, 1F).SetDelay(1.5f).SetEase(Ease.InOutBack);
-            StartCoroutine(PlayBackgroundAnimation());
+            title.GetComponent<RectTransform>().DOAnchorPosY(15f, 1F).SetDelay(1.5f).SetEase(Ease.InOutBack).OnComplete(()=> onComplete?.Invoke());
+            //StartCoroutine(PlayBackgroundAnimation());
         }
         public void Stop()
         {

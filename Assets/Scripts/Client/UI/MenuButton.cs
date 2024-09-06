@@ -24,21 +24,9 @@ public class MenuButton : MonoBehaviour
     public void Display(float animationTime, bool select = false)
     {
         gameObject.SetActive(true);
-        StartCoroutine(DisplayAnimation(animationTime, select));
-    }
 
-    private IEnumerator DisplayAnimation(float animationTime, bool select)
-    {
-        Color buttonColor = defaultcolor;
-        Color textColor = defaultTextColor;
-
-        button.image.color = new Color(0f, 0f, 0f, 0f);
-        text.color = new Color(0f, 0f, 0f, 0f);
-
-        yield return text.DOColor(defaultTextColor, animationTime * .95f).WaitForCompletion();
-        //button.image.DOColor(defaultcolor, animationTime);
-
-        Select(select);
+        text.color = initialTextColor;
+        text.DOColor(defaultTextColor, animationTime * .95f);
     }
 
     public void Hide()

@@ -117,6 +117,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dummy: {fileID: 1011843323201757406}
+  spriteRenderer: {fileID: 2592758996710145099}
+  colorA: {r: 0.8666667, g: 0.8666667, b: 0.8666667, a: 1}
+  colorB: {r: 0.61960787, g: 0.61960787, b: 0.61960787, a: 1}
+  colorC: {r: 0.3764706, g: 0.3764706, b: 0.3764706, a: 1}
+  colorD: {r: 0.15686275, g: 0.15686275, b: 0.15686275, a: 1}
 --- !u!1 &4591688316145791562
 GameObject:
   m_ObjectHideFlags: 0

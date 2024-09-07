@@ -79,7 +79,9 @@ namespace Core.Conga
         public IEnumerator Crash(IBoard board, IRythm rythm)
         {
             Vector2Int previousLocation = First.Location;
-            First.Crash(board, rythm, direction);
+            float crashTime = .1f;// 5f * participants.Count / 81f;
+
+            First.Crash(board, crashTime, direction);
 
             yield return null;
 
@@ -87,9 +89,9 @@ namespace Core.Conga
             {
                 Vector2Int d =  previousLocation - participants[i].Location;
                 previousLocation = participants[i].Location;
-                participants[i].Crash(board, rythm, d);
+                participants[i].Crash(board, crashTime, d);
 
-                yield return new WaitForSeconds(.5f / participants.Count);
+                yield return new WaitForSeconds(crashTime);
             }
         }
 

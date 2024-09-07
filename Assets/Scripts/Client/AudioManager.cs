@@ -1,4 +1,5 @@
 using Core;
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace Client
             //musicSource.pitch = Mathf.Clamp(1 + .4f / (rythm.Cadence) * .15f, 1f, 2f);
         }
 
-        public void PlaySound(ESoundCode code, float pitch = 1f)
+        public void PlaySound(ESoundCode code)
         {
             Sound sound = sounds.Find(x => x.code == code);
 
@@ -107,6 +108,19 @@ namespace Client
         {
             EventBus.Unregister<EventMuteMusic>(MuteMusic);
             EventBus.Unregister<EventMuteSound>(MuteSound);
+        }
+
+        internal void SetMusicVolume(float vol)
+        {
+            float currentVol = musicSource.volume;
+            DOVirtual.Float(currentVol, vol, .125f, (float value) => {
+                musicSource.volume = value;
+            });
+        }
+
+        internal void PlayMusicPitch(float pitch, float time)
+        {
+            musicSource.DOPitch(pitch, time);
         }
     }
 }

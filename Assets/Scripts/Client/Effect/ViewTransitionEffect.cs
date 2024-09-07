@@ -18,9 +18,8 @@ namespace Client
 
         public IEnumerator Launch(bool reverse = false)
         {
-            spriteRenderer.material.SetFloat("_Range", reverse ? 2f : -.5f);
-            yield return new WaitForSeconds(.1f);
-            yield return spriteRenderer.material.DOFloat(reverse ? 0f : 2f, "_Range", 1f).WaitForCompletion();
+            spriteRenderer.material.SetFloat("_Range", reverse ? 1.8f : 0f);
+            yield return spriteRenderer.material.DOFloat(reverse ? -.5f : 1.8f, "_Range", .5f).SetEase(Ease.InSine).WaitForCompletion();
         }
     }
 }

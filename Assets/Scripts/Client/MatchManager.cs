@@ -45,6 +45,7 @@ namespace Client
 
             audioManager.Setup(match.Rythm);
             audioManager.PlaySound(ESoundCode.MATCH_START);
+            audioManager.SetMusicVolume(.1f);
 
             StartCoroutine(match.Launch());
         }
@@ -66,17 +67,18 @@ namespace Client
             participants.Add(participant);
 
             if (isAwaiting)
-                audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA, UnityEngine.Random.Range(1f, 2f));
+                audioManager.PlaySound(ESoundCode.PARTICIPANT_JOIN_CONGA);
         }
 
         private void OnDefeat()
         {
+            audioManager.PlaySound(ESoundCode.MATCH_DEFEAT);
+            audioManager.PlayMusicPitch(.5f, .25f);
             StartCoroutine(CloseGame());
         }
 
         private IEnumerator CloseGame()
         {
-            audioManager.PlaySound(ESoundCode.MATCH_DEFEAT);
 
             yield return match.Close();
             match = null;
@@ -100,6 +102,8 @@ namespace Client
         private void BackToMenu(EventBackToMenu context)
         {
             RecycleParticipants();
+            audioManager.PlayMusicPitch(1f, 1f);
+            audioManager.SetMusicVolume(.02f);
             UIManager.Instance.DisplayView<MenuView>();
         }
 

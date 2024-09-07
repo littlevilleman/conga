@@ -18,14 +18,14 @@ namespace Client
         private const float LOCATION_WIDTH = .12f;
         private Vector3 Position => GetPosition(participant.Location);
 
-        private void Awake()
-        {
-            if (config == null)
-                return;
-            
-            participant = config.Build(new Vector2Int (4 + Mathf.CeilToInt(transform.position.x / .16f), 4 + Mathf.CeilToInt((transform.position.y / .16f) - .06f)));
-            Setup(participant, false);
-        }
+        //private void Awake()
+        //{
+        //    if (config == null)
+        //        return;
+        //    
+        //    //participant = config.Build(new Vector2Int (4 + Mathf.CeilToInt(transform.position.x / .16f), 4 + Mathf.CeilToInt((transform.position.y / .16f) - .06f)));
+        //    //Setup(participant, false);
+        //}
 
 
         public void Setup(IParticipant participantSetup, bool spawnAwaiting = true)
@@ -34,11 +34,14 @@ namespace Client
             participant.OnJoinConga += Join;
             participant.OnMove += Move;
             participant.OnCrash += Crash;
-            animator = new FrameAnimator(participant.Config.Sprites.Length);
 
+            animator = new FrameAnimator(participant.Config.Sprites.Length);
             spriteRenderer.sortingOrder = 10 - participant.Location.y;
-            spriteRenderer.maskInteraction = SpriteMaskInteraction.None;
-            spriteRenderer.material.SetFloat("_IsAwaiting", spawnAwaiting ? 1f : 0f);
+
+
+            //MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            //mpb.SetFloat("_IsAwaiting", spawnAwaiting ? 1f : 0f);
+            //spriteRenderer.SetPropertyBlock(mpb);
 
             //if (participant.Config.Colors.Length > 0)
             //{
@@ -54,8 +57,6 @@ namespace Client
 
             if (spawnAwaiting)
                 vfx.PlaySpawnEffect();
-
-            vfx.StopTeleportEffect();
         }
 
         private void Join()
@@ -85,7 +86,7 @@ namespace Client
 
         private void Crash(Vector2Int location, Vector2Int direction, float time)
         {
-            vfx.PlayCrashEffect(GetPosition(participant.Location - direction), time * 1.25f, OnCrashEffectComplete);
+            vfx.PlayCrashEffect(GetPosition(participant.Location - direction), time, OnCrashEffectComplete);
         }
 
         private void OnMoveComplete()
@@ -96,9 +97,12 @@ namespace Client
 
         private void OnCrashEffectComplete()
         {
-            spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
-            spriteRenderer.sortingOrder -= 10 - participant.Location.y;
-            vfx.PlaySpawnEffect(true);
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            mpb.SetFloat("_IsAwaiting", 1f);
+            mpb.SetColor("_AwaitingColor", spriteRenderer.material.GetColor("_ColorB"));
+            spriteRenderer.SetPropertyBlock(mpb);
+            spriteRenderer.transform.localScale = Vector3.one;
+            //spriteRenderer.sortingOrder -= 10 - participant.Location.y;
         }
 
         private Vector3 GetPosition(Vector2Int location)
@@ -109,8 +113,11 @@ namespace Client
         public void MoveResult(Transform resultBoard)
         {
             Transform board = transform.parent;
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            mpb.SetFloat("_IsAwaiting", 0f);
+            spriteRenderer.SetPropertyBlock(mpb);
+
             spriteRenderer.flipX = false;
-            spriteRenderer.material.SetFloat("_IsAwaiting", 0f);
             spriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
             spriteRenderer.transform.SetParent(resultBoard);
             spriteRenderer.transform.localScale= Vector3.one;
@@ -128,6 +135,13 @@ namespace Client
 
         public void Recycle(IPool<ParticipantBehaviour> pool)
         {
+            participant.OnJoinConga -= Join;
+            participant.OnMove -= Move;
+            participant.OnCrash -= Crash;
+
+            spriteRenderer.maskInteraction = SpriteMaskInteraction.None;
+            spriteRenderer.sortingOrder = 0;
+            vfx.StopTeleportEffect();
             StopAllCoroutines();
             pool.Recycle(this);
         }

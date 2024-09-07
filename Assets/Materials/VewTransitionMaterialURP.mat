@@ -41,7 +41,7 @@ Material:
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
     - _IsAwaiting: 0
-    - _Range: 0
+    - _Range: 1.5
     - _Reverse: 0
     m_Colors:
     - _Color: {r: 0.15686275, g: 0.15686275, b: 0.15686275, a: 1}

@@ -18,7 +18,7 @@ namespace Core.Conga
         Action OnJoinConga { get; set; }
         Action<Vector2Int, Vector2Int, float> OnCrash { get; set; }
 
-        void Crash(IBoard board, IRythm rythm, Vector2Int direction);
+        void Crash(IBoard board, float crashTime, Vector2Int direction);
         void Move(IBoard board, IRythm rythm, Vector2Int location);
     }
 
@@ -51,10 +51,10 @@ namespace Core.Conga
             move?.Invoke(toLocation, direction, rythm.Cadence *.75f);
         }
 
-        public void Crash(IBoard board, IRythm rythm, Vector2Int direction)
+        public void Crash(IBoard board, float crashTime, Vector2Int direction)
         {
             direction = board.GetBoardDirection(direction);
-            crash?.Invoke(location + direction, direction, rythm.Cadence * .75f);
+            crash?.Invoke(location + direction, direction, crashTime);
         }
     }
 }

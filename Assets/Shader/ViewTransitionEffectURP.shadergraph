@@ -258,7 +258,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "Fuzziness",
     "m_StageCapability": 3,
-    "m_Value": 0.05000000074505806,
+    "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }
@@ -1002,10 +1002,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -888.0,
-            "y": 372.0,
-            "width": 113.0,
-            "height": 34.0
+            "x": -951.2000122070313,
+            "y": 354.4000244140625,
+            "width": 113.60003662109375,
+            "height": 33.600006103515628
         }
     },
     "m_Slots": [
